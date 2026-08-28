@@ -8,6 +8,11 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) prin
 
 ### Added
 
+- Hardened CI with immutable action pins, checksum-verified actionlint, package lifecycle smoke tests, and conflict-marker detection.
+- Codecov coverage upload using GitHub OIDC and repository-level `codecov.yml`.
+- Cross-platform compatibility matrix for Node 22/24/26, macOS, and Windows with a stable `Compatibility gate`.
+- Security workflow with production dependency audit, extended CodeQL, and full-history gitleaks scanning.
+- Release-candidate SBOM generation and CI/security setup documentation, including Corgea GitHub App requirements.
 - Phase 1 structured observation foundation with a vendor-neutral normalized event schema.
 - `rigx observe` for explicit stdin/file normalization of supported Claude Code and Codex structured events.
 - Strict-mode redaction tests proving prompts, command text, tool content, transcript paths, CWDs, and file paths do not enter normalized output.

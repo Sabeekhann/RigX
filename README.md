@@ -7,7 +7,8 @@
 **Local-first harness engineering for Claude Code, Codex, and the agent tools that come next.**
 
 [![CI](https://github.com/Sabeekhann/RigX/actions/workflows/ci.yml/badge.svg)](https://github.com/Sabeekhann/RigX/actions/workflows/ci.yml)
-[![CodeQL](https://github.com/Sabeekhann/RigX/actions/workflows/codeql.yml/badge.svg)](https://github.com/Sabeekhann/RigX/actions/workflows/codeql.yml)
+[![Security](https://github.com/Sabeekhann/RigX/actions/workflows/security.yml/badge.svg)](https://github.com/Sabeekhann/RigX/actions/workflows/security.yml)
+[![codecov](https://codecov.io/gh/Sabeekhann/RigX/branch/main/graph/badge.svg)](https://codecov.io/gh/Sabeekhann/RigX)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![Node.js](https://img.shields.io/badge/Node.js-%3E%3D22-339933?logo=node.js&logoColor=white)](package.json)
 [![Status](https://img.shields.io/badge/status-alpha-orange.svg)](ROADMAP.md)
@@ -52,6 +53,7 @@ The current implementation is deliberately small and deterministic. It establish
 | `rigx doctor [path]` | Audits a repository harness and reports evidence-backed gaps. |
 | `rigx agents` | Detects local Claude Code and Codex data surfaces without parsing transcript contents in strict mode. |
 | `rigx privacy [path]` | Shows the active privacy guarantees. |
+| `rigx observe --agent <claude-code|codex>` | Normalizes explicitly supplied structured agent events without persisting raw content. |
 | `rigx snapshot [path]` | Creates a content-free SHA-256 baseline of harness surfaces. |
 | `rigx status [path]` | Reports harness drift against the baseline. |
 
@@ -99,6 +101,15 @@ rigx privacy . --json
 rigx snapshot . --json
 rigx status . --json
 ```
+
+Structured observation is explicit and stream-based. For example:
+
+```bash
+printf '%s\n' '{"hook_event_name":"SessionStart","session_id":"example"}' \
+  | rigx observe --agent claude-code --json
+```
+
+RIGX emits only the normalized strict-mode event fields and does not persist the raw input.
 
 ## Example
 
@@ -173,8 +184,8 @@ RIGX reports which harness surfaces were added, removed, or changed.
 
 | Agent | Current support | Direction |
 | --- | --- | --- |
-| Claude Code | Local surface detection | Structured observation adapter |
-| OpenAI Codex | Local surface detection | Structured observation adapter |
+| Claude Code | Local surface detection + structured event normalization | Direct hook adapter |
+| OpenAI Codex | Local surface detection + structured event normalization | Direct event adapter |
 | Cursor | Harness surface discovery | Adapter planned |
 | OpenCode | Architecture supports adapters | Adapter planned |
 | Other agents | Vendor-neutral core | Community adapters planned |
@@ -201,7 +212,6 @@ promote proven improvement or reject regression
 
 Planned capabilities include:
 
-- normalized local event model for coding-agent runs
 - repeated-search and repeated-failure detection
 - skipped-verification detection
 - context/harness waste signals
@@ -255,6 +265,8 @@ npm run package:check
 ```
 
 The runtime intentionally has **zero third-party dependencies** in the current alpha.
+
+CI includes required tests/package validation, cross-platform compatibility, Codecov coverage, dependency review, CodeQL, gitleaks, and production dependency auditing. See [docs/CI.md](docs/CI.md).
 
 ## Contributing
 

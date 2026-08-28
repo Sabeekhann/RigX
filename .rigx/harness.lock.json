@@ -1,20 +1,64 @@
 {
   "schemaVersion": 1,
-  "createdAt": "2026-08-28T19:26:10.541Z",
+  "createdAt": "2026-08-28T19:47:52.400Z",
   "privacyMode": "strict",
   "contentStored": false,
   "files": [
-    {"path": ".github/workflows/ci.yml", "sha256": "8bc5e8f6f812cc8d9a66c6c368d67058016f2ab0f5d365b31ab64cf7418ca5bb", "bytes": 704},
-    {"path": ".github/workflows/codeql.yml", "sha256": "f0b9dddfb3c8695527d42442a8159c8b98e0735a241ae2f203bbe734c0c97893", "bytes": 546},
-    {"path": ".github/workflows/dependency-review.yml", "sha256": "79fa2012fded4f936f62a7e76c0a167b04e7b146d7d92dede9df5c3445cad9cb", "bytes": 289},
-    {"path": ".github/workflows/release-check.yml", "sha256": "b0683daa5e3b5909064bd6fc904156760ee7f2833c96fd5d2f5e682f96a8d7cb", "bytes": 624},
-    {"path": ".rigx/config.json", "sha256": "128396477c2fde1ffd889be49995531dd1e94d00e0cfd2cacfc94ec653a85bc6", "bytes": 360},
-    {"path": "AGENTS.md", "sha256": "f3eff8462884d6b5a5611f612247ba48ccfe859bf8f05cfae67fd20fe8f54fa2", "bytes": 4524},
-    {"path": "CLAUDE.md", "sha256": "e8fd08031eeaca5711a93997f866af32de0618511f0f919af67212245ba36013", "bytes": 387},
-    {"path": "docs/architecture.md", "sha256": "ce847b9db0e95e172b0bc6d10c303fceb10e932df779a169f06f8ce0a295aa72", "bytes": 4231}
+    {
+      "path": ".github/workflows/ci.yml",
+      "sha256": "1c82938d7dc1a972a27de815c6d77c4141bdbe2655bdf8cb2ac4cae6bf639cfa",
+      "bytes": 3607
+    },
+    {
+      "path": ".github/workflows/compatibility.yml",
+      "sha256": "14bdd66993c2993fbb308bd9514610082410fecb28abf9fdedd1b31ce3946ed7",
+      "bytes": 1721
+    },
+    {
+      "path": ".github/workflows/dependency-review.yml",
+      "sha256": "2d759e16cf66eb3bac1ad33909b34b630535bda81f96e2e4f040aca550a317bf",
+      "bytes": 439
+    },
+    {
+      "path": ".github/workflows/release-check.yml",
+      "sha256": "450a8a0b8591ca71c98c0c0ec8163127a3928224d0c67b1845ab7f26979c3fce",
+      "bytes": 914
+    },
+    {
+      "path": ".github/workflows/security.yml",
+      "sha256": "32d9d6c55f626ac104a70cd5f4623a9be3ee4f1850e6251d70709432df498092",
+      "bytes": 2625
+    },
+    {
+      "path": ".rigx/config.json",
+      "sha256": "128396477c2fde1ffd889be49995531dd1e94d00e0cfd2cacfc94ec653a85bc6",
+      "bytes": 360
+    },
+    {
+      "path": "AGENTS.md",
+      "sha256": "f3eff8462884d6b5a5611f612247ba48ccfe859bf8f05cfae67fd20fe8f54fa2",
+      "bytes": 4524
+    },
+    {
+      "path": "CLAUDE.md",
+      "sha256": "e8fd08031eeaca5711a93997f866af32de0618511f0f919af67212245ba36013",
+      "bytes": 387
+    },
+    {
+      "path": "docs/architecture.md",
+      "sha256": "ce847b9db0e95e172b0bc6d10c303fceb10e932df779a169f06f8ce0a295aa72",
+      "bytes": 4231
+    }
   ],
   "verification": {
-    "names": ["check", "lint", "package:check", "test"],
-    "sha256": "eb61c964cf1e59a472603c80241f435ee1a7ff4381e0f6175ee902994ad443d9"
+    "names": [
+      "check",
+      "ci",
+      "lint",
+      "package:check",
+      "test",
+      "test:package"
+    ],
+    "sha256": "a10a475ac4e441e07f791514a8f09ac9b4754a233c59c51c7f5202c6360a88e4"
   }
 }
