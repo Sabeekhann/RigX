@@ -13,16 +13,16 @@ RIGX is being built from deterministic foundations outward. Dates are intentiona
 - machine-readable JSON output
 - CI, security, contribution, and release hygiene
 
-## Phase 1 — structured observation
+## Phase 1 — structured observation 🚧 in progress
 
-- normalized event model for coding-agent runs
-- adapter-driven Claude Code observation
-- adapter-driven Codex observation
-- strict-mode metadata collectors
-- tool success/failure signals
-- deterministic per-stream repeated-failure, repetition, search-heavy, agent-error, and event-coverage signals
-- retry and verification signals
-- local session index without raw transcript persistence by default
+- [x] normalized event model for coding-agent runs
+- [x] adapter-driven Claude Code observation
+- [x] adapter-driven Codex observation
+- [x] strict-mode metadata collectors
+- [x] tool success/failure signals
+- [x] deterministic per-stream repeated-failure, repetition, search-heavy, agent-error, and event-coverage signals
+- [ ] retry and verification signals
+- [ ] local session index without raw transcript persistence by default
 
 ## Phase 2 — harness diagnosis
 
