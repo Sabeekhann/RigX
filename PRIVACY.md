@@ -32,6 +32,14 @@ The configuration also sets network access to `deny` for RIGX-controlled analysi
 
 `--show-paths` is an explicit display option. It does not change the strict-mode persistence policy.
 
+## Structured observation
+
+`rigx observe` is an explicit, opt-in stream normalizer. RIGX does not automatically scrape local Claude Code or Codex conversation history. The command reads structured event payloads supplied by the user (stdin or an explicit input file), translates supported vendor lifecycle/tool events into the RIGX event schema, and writes sanitized events to stdout.
+
+In strict mode, normalized events can include the agent identifier, event kind, tool name/category, success/failure state, a one-way opaque session identifier, and a small allowlist of non-content metadata. They do not include command text, prompts, model responses, source snippets, tool input/output, transcript paths, current working directories, or file paths. Unsupported vendor events are ignored rather than guessed.
+
+The current `observe` command does **not** persist normalized events. Persistence will be introduced only with an explicit local-state contract and dedicated privacy regression tests.
+
 ## Harness snapshots
 
 `rigx snapshot` stores a repository-local baseline at `.rigx/harness.lock.json`.
