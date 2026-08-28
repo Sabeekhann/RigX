@@ -20,13 +20,13 @@ RIGX is being built from deterministic foundations outward. Dates are intentiona
 - adapter-driven Codex observation
 - strict-mode metadata collectors
 - tool success/failure signals
+- deterministic per-stream repeated-failure, repetition, search-heavy, agent-error, and event-coverage signals
 - retry and verification signals
 - local session index without raw transcript persistence by default
 
 ## Phase 2 — harness diagnosis
 
-- repeated-search detection
-- repeated-failure detection
+- cross-session recurrence for search/repetition/failure patterns
 - skipped-verification detection
 - instruction duplication evidence
 - instruction conflict evidence where deterministically provable
@@ -36,7 +36,15 @@ RIGX is being built from deterministic foundations outward. Dates are intentiona
 
 ## Phase 3 — harness proposals
 
-Generate reviewable proposals for instruction restructuring, task-specific skills, deterministic hooks, repository navigation docs, verification workflows, tool/MCP configuration changes, and recovery workflows.
+Generate reviewable proposals for:
+
+- instruction restructuring
+- task-specific skills
+- deterministic hooks
+- repository navigation docs
+- verification workflows
+- tool/MCP configuration changes
+- recovery workflows
 
 No automatic application by default.
 
@@ -63,4 +71,11 @@ No automatic application by default.
 
 ## Non-goals
 
-RIGX is not intended to replace coding agents, require a cloud account for core analysis, silently upload repositories or conversations, silently rewrite agent configuration, score agents using opaque numbers without evidence, or make unverified claims that a harness change is “better.”
+RIGX is not intended to:
+
+- replace Claude Code, Codex, Cursor, or OpenCode with another coding agent;
+- require a cloud account for core analysis;
+- silently upload repositories or conversations;
+- silently rewrite agent configuration;
+- score agents using opaque numbers without evidence;
+- make unverified claims that a harness change is “better.”

@@ -2,11 +2,12 @@ import { runAgents } from './commands/agents.js';
 import { runDoctor } from './commands/doctor.js';
 import { runInit } from './commands/init.js';
 import { runObserve } from './commands/observe.js';
+import { runPatterns } from './commands/patterns.js';
 import { runPrivacy } from './commands/privacy.js';
 import { runSnapshot } from './commands/snapshot.js';
 import { runStatus } from './commands/status.js';
 
-const HELP = `RIGX — local-first harness engineering for coding agents\n\nUsage:\n  rigx init [path] [--force]\n  rigx doctor [path] [--json]\n  rigx agents [--json] [--show-paths]\n  rigx privacy [path] [--json]\n  rigx observe --agent <claude-code|codex> [--input <file|->] [--json]\n  rigx snapshot [path] [--json]\n  rigx status [path] [--json]\n  rigx --help\n  rigx --version\n\nPrivacy:\n  Strict mode is the default. Core commands make no network requests.\n`;
+const HELP = `RIGX — local-first harness engineering for coding agents\n\nUsage:\n  rigx init [path] [--force]\n  rigx doctor [path] [--json]\n  rigx agents [--json] [--show-paths]\n  rigx privacy [path] [--json]\n  rigx observe --agent <claude-code|codex> [--input <file|->] [--json]\n  rigx patterns --agent <claude-code|codex> [--input <file|->] [--json]\n  rigx snapshot [path] [--json]\n  rigx status [path] [--json]\n  rigx --help\n  rigx --version\n\nPrivacy:\n  Strict mode is the default. Core commands make no network requests.\n`;
 
 function positional(args, fallback = '.') {
   return args.find((arg) => !arg.startsWith('-')) ?? fallback;
@@ -34,6 +35,16 @@ export async function runCli(argv) {
         const agentIndex = args.indexOf('--agent');
         const inputIndex = args.indexOf('--input');
         output = await runObserve({
+          agent: agentIndex >= 0 ? args[agentIndex + 1] : undefined,
+          input: inputIndex >= 0 ? args[inputIndex + 1] : '-',
+          json: args.includes('--json'),
+        });
+        break;
+      }
+      case 'patterns': {
+        const agentIndex = args.indexOf('--agent');
+        const inputIndex = args.indexOf('--input');
+        output = await runPatterns({
           agent: agentIndex >= 0 ? args[agentIndex + 1] : undefined,
           input: inputIndex >= 0 ? args[inputIndex + 1] : '-',
           json: args.includes('--json'),
