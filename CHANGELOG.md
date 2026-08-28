@@ -26,6 +26,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) prin
 
 ### Changed
 
+- Synchronized the README and roadmap with the implemented `rigx patterns` command and current Phase 1 progress.
 - Expanded README and repository documentation for the RIGX product direction.
 - Package metadata now reflects the public GitHub repository and Apache-2.0 license.
 
