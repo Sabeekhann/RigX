@@ -10,7 +10,9 @@
     "lint": "node scripts/check-syntax.js",
     "test": "node --test",
     "check": "npm run lint && npm test",
-    "package:check": "npm pack --dry-run"
+    "package:check": "npm pack --dry-run",
+    "test:package": "node scripts/package-smoke.js",
+    "ci": "npm run check && npm run test:package && npm run package:check"
   },
   "engines": {
     "node": ">=22"
