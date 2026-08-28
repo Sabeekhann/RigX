@@ -1,6 +1,8 @@
 <div align="center">
 
-# RIGX
+<img src="./assets/rigx-banner-small.jpg"
+     alt="RIGX — the self-improving harness for coding agents"
+     width="100%" />
 
 ### The self-improving harness for coding agents.
 
