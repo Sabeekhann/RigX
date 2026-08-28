@@ -8,6 +8,8 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) prin
 
 ### Added
 
+- `rigx index` for explicit, ignored, strict-mode local session summaries without raw event or tool-name persistence.
+- Privacy regression tests for the repository-local session index and its initialization boundary.
 - Added the RIGX visual identity and cowboy/lasso mascot branding to the repository README.
 - `rigx patterns` deterministic session diagnostics for repeated tool failures, high tool repetition, search-heavy sessions, agent errors, and incomplete tool-event coverage.
 - Privacy regression tests proving pattern findings retain only normalized metadata and opaque session identifiers.
