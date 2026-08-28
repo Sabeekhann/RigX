@@ -1,0 +1,47 @@
+{
+  "name": "rigx",
+  "version": "0.1.0-alpha.1",
+  "description": "Local-first harness engineering for coding agents.",
+  "type": "module",
+  "bin": {
+    "rigx": "src/index.js"
+  },
+  "scripts": {
+    "lint": "node scripts/check-syntax.js",
+    "test": "node --test",
+    "check": "npm run lint && npm test",
+    "package:check": "npm pack --dry-run"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "keywords": [
+    "ai",
+    "agents",
+    "coding-agents",
+    "claude-code",
+    "codex",
+    "harness",
+    "harness-engineering",
+    "local-first",
+    "developer-tools",
+    "agentic-ai"
+  ],
+  "license": "Apache-2.0",
+  "files": [
+    "src",
+    "README.md",
+    "PRIVACY.md",
+    "LICENSE",
+    "NOTICE"
+  ],
+  "author": "RIGX contributors",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Sabeekhann/RigX.git"
+  },
+  "homepage": "https://github.com/Sabeekhann/RigX#readme",
+  "bugs": {
+    "url": "https://github.com/Sabeekhann/RigX/issues"
+  }
+}

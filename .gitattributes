@@ -1,0 +1,9 @@
+* text=auto eol=lf
+
+*.md text diff=markdown
+*.json text
+*.yml text
+*.yaml text
+*.js text
+
+package-lock.json linguist-generated=false

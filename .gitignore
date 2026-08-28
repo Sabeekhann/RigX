@@ -1,0 +1,13 @@
+node_modules/
+dist/
+dist-test/
+coverage/
+*.log
+.DS_Store
+
+# RIGX generated local state
+.rigx/state/
+.rigx/cache/
+.rigx/sessions/
+.rigx/proposals/
+.rigx/evals/

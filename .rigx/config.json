@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "privacy": {
+    "mode": "strict",
+    "sessionObservation": "metadata-only",
+    "persistRawPrompts": false,
+    "persistModelResponses": false,
+    "persistSourceCode": false,
+    "persistTerminalOutput": false,
+    "persistFullPaths": false,
+    "network": "deny"
+  },
+  "agents": {
+    "claudeCode": true,
+    "codex": true
+  }
+}

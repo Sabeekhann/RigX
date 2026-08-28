@@ -1,0 +1,33 @@
+name: Feature request
+description: Propose a harness-engineering capability
+title: "feat: "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Harness-engineering problem
+      description: What repeated developer/agent problem should RIGX solve?
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence / examples
+      description: Sanitized examples, workflows, or measurements that show the problem
+    validations:
+      required: false
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Desired outcome
+      description: What should a user be able to do or learn?
+    validations:
+      required: true
+  - type: textarea
+    id: privacy
+    attributes:
+      label: Privacy / data implications
+      description: Would this require reading transcripts, source, tool output, network APIs, or new persistence?
+    validations:
+      required: true

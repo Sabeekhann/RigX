@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security and privacy vulnerabilities
+    url: https://github.com/Sabeekhann/RigX/security
+    about: Please use a private security reporting path instead of a public issue.

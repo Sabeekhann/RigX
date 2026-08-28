@@ -1,0 +1,52 @@
+name: Bug report
+description: Report a reproducible problem in RIGX
+title: "bug: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a bug. **Do not include secrets, private source code, or raw private agent transcripts.** Use the Security tab for sensitive vulnerabilities.
+  - type: input
+    id: version
+    attributes:
+      label: RIGX version / commit
+      placeholder: 0.1.0-alpha.1 or commit SHA
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: OS and Node.js version
+      placeholder: macOS 15, Node 22.18.0
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Reproduction
+      description: Minimal sanitized steps to reproduce
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+  - type: dropdown
+    id: privacy
+    attributes:
+      label: Does this involve privacy, unexpected persistence, or network access?
+      options:
+        - "No"
+        - "Yes — I will report privately instead"
+    validations:
+      required: true
