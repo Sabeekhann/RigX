@@ -47,7 +47,7 @@ RIGX does **not** replace Claude Code or Codex. It improves the system around th
 
 ## Current alpha
 
-The current implementation is deliberately small and deterministic. It establishes the privacy and reproducibility foundation needed before richer session observation is added.
+The current implementation is deliberately small and deterministic. It provides a privacy-safe observation boundary and evidence-backed, per-stream diagnostics without persisting raw session content.
 
 | Command | What it does |
 | --- | --- |
@@ -56,6 +56,7 @@ The current implementation is deliberately small and deterministic. It establish
 | `rigx agents` | Detects local Claude Code and Codex data surfaces without parsing transcript contents in strict mode. |
 | `rigx privacy [path]` | Shows the active privacy guarantees. |
 | `rigx observe --agent <claude-code|codex>` | Normalizes explicitly supplied structured agent events without persisting raw content. |
+| `rigx patterns --agent <claude-code|codex>` | Detects deterministic failure, repetition, search, agent-error, and event-coverage patterns in an explicitly supplied event stream. |
 | `rigx snapshot [path]` | Creates a content-free SHA-256 baseline of harness surfaces. |
 | `rigx status [path]` | Reports harness drift against the baseline. |
 
@@ -100,6 +101,7 @@ Machine-readable output is available where useful:
 rigx doctor . --json
 rigx agents --json
 rigx privacy . --json
+rigx patterns --agent claude-code --input events.ndjson --json
 rigx snapshot . --json
 rigx status . --json
 ```
@@ -111,7 +113,11 @@ printf '%s\n' '{"hook_event_name":"SessionStart","session_id":"example"}' \
   | rigx observe --agent claude-code --json
 ```
 
-RIGX emits only the normalized strict-mode event fields and does not persist the raw input.
+RIGX emits only the normalized strict-mode event fields and does not persist the raw input. The same explicit stream can be analyzed for deterministic patterns:
+
+```bash
+cat claude-hook-events.ndjson | rigx patterns --agent claude-code
+```
 
 ## Example
 
@@ -212,9 +218,9 @@ isolated evaluation
 promote proven improvement or reject regression
 ```
 
-Planned capabilities include:
+Current per-stream diagnostics already cover repeated failures, high tool repetition, search-heavy sessions, agent errors, and incomplete tool activity. Planned capabilities include:
 
-- repeated-search and repeated-failure detection
+- cross-session recurrence for existing deterministic patterns
 - skipped-verification detection
 - context/harness waste signals
 - reviewable skill, hook, instruction, and documentation proposals
