@@ -8,6 +8,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) prin
 
 ### Added
 
+- Added the RIGX visual identity and cowboy/lasso mascot branding to the repository README.
 - `rigx patterns` deterministic session diagnostics for repeated tool failures, high tool repetition, search-heavy sessions, agent errors, and incomplete tool-event coverage.
 - Privacy regression tests proving pattern findings retain only normalized metadata and opaque session identifiers.
 - Hardened CI with immutable action pins, checksum-verified actionlint, package lifecycle smoke tests, and conflict-marker detection.
