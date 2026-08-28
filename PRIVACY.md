@@ -38,7 +38,9 @@ The configuration also sets network access to `deny` for RIGX-controlled analysi
 
 In strict mode, normalized events can include the agent identifier, event kind, tool name/category, success/failure state, a one-way opaque session identifier, and a small allowlist of non-content metadata. They do not include command text, prompts, model responses, source snippets, tool input/output, transcript paths, current working directories, or file paths. Unsupported vendor events are ignored rather than guessed.
 
-The current `observe` command does **not** persist normalized events. `rigx patterns` analyzes that same normalized metadata boundary and emits deterministic findings to stdout without persisting the supplied events or findings. Pattern output can contain opaque session identifiers, tool names/categories, counts, ratios, and detector evidence, but not the excluded raw content listed above. Persistence will be introduced only with an explicit local-state contract and dedicated privacy regression tests.
+The current `observe` command does **not** persist normalized events. `rigx patterns` analyzes that same normalized metadata boundary and emits deterministic findings to stdout without persisting the supplied events or findings. Pattern output can contain opaque session identifiers, tool names/categories, counts, ratios, and detector evidence, but not the excluded raw content listed above.
+
+`rigx index` is an explicit, repository-local persistence boundary. It requires an initialized strict metadata-only configuration and writes an ignored `.rigx/state/session-index.json` file. The index contains only opaque session identifiers, adapter-controlled agent identifiers, optional normalized timestamps, lifecycle presence, and bounded event/tool/category counts. It does not persist normalized event records, tool names, raw payloads, or any excluded content listed above. Dedicated regression tests place private markers in supplied payloads and verify they do not enter the index.
 
 ## Harness snapshots
 
