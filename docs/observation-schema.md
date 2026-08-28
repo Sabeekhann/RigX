@@ -12,7 +12,7 @@ RIGX Phase 1 defines a small vendor-neutral event envelope for coding-agent life
 
 ## Input boundary
 
-`rigx observe` and `rigx patterns` only read events explicitly supplied by the user through stdin or `--input <file>`. They do not crawl transcript directories or automatically attach to running agents.
+`rigx observe`, `rigx patterns`, and `rigx index` only read events explicitly supplied by the user through stdin or `--input <file>`. They do not crawl transcript directories or automatically attach to running agents.
 
 Input is newline-delimited JSON (NDJSON), one structured vendor event per line.
 
@@ -90,8 +90,20 @@ Tool names are deterministically grouped into coarse categories:
 
 The raw command, file target, URL, query, and content are not retained by the strict schema.
 
-## Persistence
+## Local session index
 
-Phase 1 does not persist normalized observation events. `rigx observe` writes normalized events to stdout, while `rigx patterns` analyzes the same in-memory normalized stream and writes evidence-backed findings to stdout. A future persistence layer must be explicit, repository-local, independently configurable, and covered by privacy regression tests before it ships.
+`rigx observe` writes normalized events to stdout, while `rigx patterns` analyzes the same in-memory normalized stream and writes evidence-backed findings to stdout. Neither command persists supplied events or findings.
+
+`rigx index [path] --agent <claude-code|codex> --input <file|->` is the explicit persistence boundary. It requires an initialized repository in strict metadata-only mode and writes `.rigx/state/session-index.json`, which is ignored by the default `.rigx/.gitignore`.
+
+The index stores only:
+
+- one-way opaque session identifiers;
+- the adapter-controlled agent identifier;
+- first and last normalized timestamps, when supplied;
+- session start/end presence;
+- bounded counts for events, tool starts/ends/failures, agent errors, and coarse tool-start categories.
+
+It does not persist normalized events, tool names, raw vendor payloads, prompts, responses, source code, commands, tool input/output, working directories, file paths, or raw session identifiers. Re-indexing the same opaque agent/session replaces its summary rather than duplicating counts.
 
 See [patterns.md](patterns.md) for the current deterministic detector contract.
