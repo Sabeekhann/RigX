@@ -9,7 +9,7 @@ RIGX CI protects the project's core constraints: local-first behavior, strict pr
 | CI / Required CI | PRs, pushes to `main`, manual | actionlint, syntax/tests, production audit, packed-package lifecycle, package dry-run, CLI smoke tests, and merge-conflict detection |
 | Coverage (Codecov) | PRs, pushes to `main`, manual | Generates LCOV with Node's built-in coverage and uploads through Codecov OIDC; advisory |
 | Compatibility / Compatibility gate | PRs, pushes to `main`, manual | Node 22/24/26 on Linux plus Node 24 on macOS and Windows, including packed-package installation |
-| Dependency Review | PRs | Fails on new high-severity dependency findings |
+| Dependency Review | PRs | Reviews dependency diffs for high-severity findings; advisory until GitHub Dependency Graph is enabled |
 | Security | pushes to `main`, Mondays, manual | production dependency audit, extended CodeQL, and full-history gitleaks scan |
 | Corgea: Security Scan | Corgea GitHub App PR events | Independent PR security review and check run; configured outside GitHub Actions |
 | Release Check | version tags, manual | Re-runs the local release gate and emits a CycloneDX npm SBOM; never publishes |
@@ -43,7 +43,7 @@ Compatibility gate
 Corgea: Security Scan
 ```
 
-Codecov should remain advisory initially. Dependency Review can be required once its behavior is confirmed for the repository.
+Codecov should remain advisory initially. Dependency Review is also advisory until **Settings → Security → Dependency graph** is enabled; after that is verified, it can be promoted to a required status.
 
 ## Recommended repository settings
 

@@ -10,8 +10,11 @@ const consumerDir = path.join(tempRoot, 'consumer');
 mkdirSync(packDir, { recursive: true });
 mkdirSync(consumerDir, { recursive: true });
 
-function run(file, args, cwd, options = {}) {
-  return execFileSync(file, args, {
+const npmCli = process.env.npm_execpath;
+if (!npmCli) throw new Error('npm_execpath is unavailable; run this check through npm.');
+
+function runNode(args, cwd, options = {}) {
+  return execFileSync(process.execPath, args, {
     cwd,
     encoding: 'utf8',
     stdio: options.capture ? ['ignore', 'pipe', 'pipe'] : 'inherit',
@@ -19,23 +22,24 @@ function run(file, args, cwd, options = {}) {
   });
 }
 
+function npm(args, cwd, options = {}) {
+  return runNode([npmCli, ...args], cwd, options);
+}
+
 try {
-  const packageName = run('npm', ['pack', '--silent', '--pack-destination', packDir], root, { capture: true }).trim().split(/\r?\n/).at(-1);
+  const packageName = npm(['pack', '--silent', '--pack-destination', packDir], root, { capture: true }).trim().split(/\r?\n/).at(-1);
   if (!packageName) throw new Error('npm pack did not return a package filename.');
 
   const packagePath = path.join(packDir, packageName);
-  run('npm', ['init', '-y'], consumerDir, { capture: true });
-  run('npm', ['install', '--ignore-scripts', '--no-audit', '--no-fund', packagePath], consumerDir, { capture: true });
+  npm(['init', '-y'], consumerDir, { capture: true });
+  npm(['install', '--ignore-scripts', '--no-audit', '--no-fund', packagePath], consumerDir, { capture: true });
 
-  const cli = process.platform === 'win32'
-    ? path.join(consumerDir, 'node_modules', '.bin', 'rigx.cmd')
-    : path.join(consumerDir, 'node_modules', '.bin', 'rigx');
-  const version = run(cli, ['--version'], consumerDir, { capture: true }).trim();
+  const version = npm(['exec', '--yes=false', '--', 'rigx', '--version'], consumerDir, { capture: true }).trim();
   if (version !== '0.1.0-alpha.1') {
     throw new Error(`Installed CLI reported unexpected version: ${version}`);
   }
 
-  run(cli, ['--help'], consumerDir, { capture: true });
+  npm(['exec', '--yes=false', '--', 'rigx', '--help'], consumerDir, { capture: true });
   process.stdout.write(`Packed package smoke test passed (${packageName}).\n`);
 } finally {
   rmSync(tempRoot, { recursive: true, force: true });

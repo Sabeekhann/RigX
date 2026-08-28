@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "createdAt": "2026-08-28T19:47:52.400Z",
+  "createdAt": "2026-08-28T19:56:30.082Z",
   "privacyMode": "strict",
   "contentStored": false,
   "files": [
@@ -16,8 +16,8 @@
     },
     {
       "path": ".github/workflows/dependency-review.yml",
-      "sha256": "2d759e16cf66eb3bac1ad33909b34b630535bda81f96e2e4f040aca550a317bf",
-      "bytes": 439
+      "sha256": "16baa677d65d94ecb4f062b3cc4c3b9fffcbdbf92d62aed40e1c3467d890fd4e",
+      "bytes": 467
     },
     {
       "path": ".github/workflows/release-check.yml",
