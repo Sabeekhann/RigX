@@ -1,16 +1,31 @@
 import { runAgents } from './commands/agents.js';
 import { runDoctor } from './commands/doctor.js';
 import { runInit } from './commands/init.js';
+import { runIndex } from './commands/index.js';
 import { runObserve } from './commands/observe.js';
 import { runPatterns } from './commands/patterns.js';
 import { runPrivacy } from './commands/privacy.js';
 import { runSnapshot } from './commands/snapshot.js';
 import { runStatus } from './commands/status.js';
 
-const HELP = `RIGX — local-first harness engineering for coding agents\n\nUsage:\n  rigx init [path] [--force]\n  rigx doctor [path] [--json]\n  rigx agents [--json] [--show-paths]\n  rigx privacy [path] [--json]\n  rigx observe --agent <claude-code|codex> [--input <file|->] [--json]\n  rigx patterns --agent <claude-code|codex> [--input <file|->] [--json]\n  rigx snapshot [path] [--json]\n  rigx status [path] [--json]\n  rigx --help\n  rigx --version\n\nPrivacy:\n  Strict mode is the default. Core commands make no network requests.\n`;
+const HELP = `RIGX — local-first harness engineering for coding agents\n\nUsage:\n  rigx init [path] [--force]\n  rigx doctor [path] [--json]\n  rigx agents [--json] [--show-paths]\n  rigx privacy [path] [--json]\n  rigx observe --agent <claude-code|codex> [--input <file|->] [--json]\n  rigx patterns --agent <claude-code|codex> [--input <file|->] [--json]\n  rigx index [path] --agent <claude-code|codex> [--input <file|->] [--json]\n  rigx snapshot [path] [--json]\n  rigx status [path] [--json]\n  rigx --help\n  rigx --version\n\nPrivacy:\n  Strict mode is the default. Core commands make no network requests.\n`;
 
 function positional(args, fallback = '.') {
   return args.find((arg) => !arg.startsWith('-')) ?? fallback;
+}
+
+function optionValue(args, name, fallback) {
+  const index = args.indexOf(name);
+  return index >= 0 ? args[index + 1] : fallback;
+}
+
+function commandPath(args) {
+  const consumed = new Set();
+  for (const name of ['--agent', '--input']) {
+    const index = args.indexOf(name);
+    if (index >= 0) consumed.add(index + 1);
+  }
+  return args.find((arg, index) => !arg.startsWith('-') && !consumed.has(index)) ?? '.';
 }
 
 export async function runCli(argv) {
@@ -51,6 +66,12 @@ export async function runCli(argv) {
         });
         break;
       }
+      case 'index': output = await runIndex({
+        root: commandPath(args),
+        agent: optionValue(args, '--agent'),
+        input: optionValue(args, '--input', '-'),
+        json: args.includes('--json'),
+      }); break;
       case 'snapshot': output = await runSnapshot(positional(args), args.includes('--json')); break;
       case 'status': output = await runStatus(positional(args), args.includes('--json')); break;
       default:
