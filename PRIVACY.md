@@ -38,15 +38,21 @@ The configuration also sets network access to `deny` for RIGX-controlled analysi
 
 In strict mode, normalized events can include the agent identifier, event kind, tool name/category, success/failure state, a one-way opaque session identifier, and a small allowlist of non-content metadata. They do not include command text, prompts, model responses, source snippets, tool input/output, transcript paths, current working directories, or file paths. Unsupported vendor events are ignored rather than guessed.
 
-The current `observe` command does **not** persist normalized events. Persistence will be introduced only with an explicit local-state contract and dedicated privacy regression tests.
+The current `observe` command does **not** persist normalized events. `rigx patterns` analyzes that same normalized metadata boundary and emits deterministic findings to stdout without persisting the supplied events or findings. Pattern output can contain opaque session identifiers, tool names/categories, counts, ratios, and detector evidence, but not the excluded raw content listed above. Persistence will be introduced only with an explicit local-state contract and dedicated privacy regression tests.
 
 ## Harness snapshots
 
 `rigx snapshot` stores a repository-local baseline at `.rigx/harness.lock.json`.
 
-The snapshot contains relative harness file names, byte counts, SHA-256 hashes, verification-script fingerprints, and privacy mode metadata. It does **not** store the contents of the hashed files.
+The snapshot contains:
 
-The test suite contains a regression test that puts a private marker inside `AGENTS.md` and verifies that the marker does not appear in the lockfile.
+- relative harness file names;
+- byte counts;
+- SHA-256 hashes;
+- verification-script fingerprints;
+- privacy mode metadata.
+
+It does **not** store the contents of the hashed files. The test suite contains a regression test that puts a private marker inside `AGENTS.md` and verifies that the marker does not appear in the lockfile.
 
 ## Local state
 
