@@ -2,10 +2,10 @@ import { mkdir, readFile, rename, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { CONFIG_DIR, loadConfig } from './config.js';
 
-export const SESSION_INDEX_SCHEMA_VERSION = 1;
+export const SESSION_INDEX_SCHEMA_VERSION = 2;
 export const SESSION_INDEX_FILE = 'session-index.json';
 
-const TOOL_CATEGORIES = ['shell', 'filesystem', 'search', 'network', 'subagent', 'other'];
+const TOOL_CATEGORIES = ['shell', 'filesystem', 'search', 'network', 'subagent', 'verification', 'other'];
 
 function emptyCounts() {
   return {
@@ -98,13 +98,31 @@ function storedSummary(item) {
   };
 }
 
+// v1 indexes predate the `verification` tool category; backfill a zero count
+// rather than rejecting the file so an existing local index survives upgrade.
+function migrateSessionsFromV1(sessions) {
+  return sessions.map((item) => ({
+    ...item,
+    counts: {
+      ...item.counts,
+      toolStartsByCategory: { ...item.counts?.toolStartsByCategory, verification: item.counts?.toolStartsByCategory?.verification ?? 0 },
+    },
+  }));
+}
+
 async function readIndex(file) {
   try {
     const parsed = JSON.parse(await readFile(file, 'utf8'));
-    if (parsed.schemaVersion !== SESSION_INDEX_SCHEMA_VERSION || !Array.isArray(parsed.sessions)) {
-      throw new Error('Unsupported or invalid session index schema.');
+    if (!Array.isArray(parsed.sessions)) throw new Error('Invalid session index schema.');
+
+    let sessions = parsed.sessions;
+    if (parsed.schemaVersion === 1) {
+      sessions = migrateSessionsFromV1(sessions);
+    } else if (parsed.schemaVersion !== SESSION_INDEX_SCHEMA_VERSION) {
+      throw new Error('Unsupported session index schema.');
     }
-    return { ...parsed, sessions: parsed.sessions.map(storedSummary) };
+
+    return { ...parsed, schemaVersion: SESSION_INDEX_SCHEMA_VERSION, sessions: sessions.map(storedSummary) };
   } catch (error) {
     if (error?.code === 'ENOENT') {
       return {
@@ -115,6 +133,10 @@ async function readIndex(file) {
     }
     throw error;
   }
+}
+
+export async function readSessionIndex(root) {
+  return readIndex(sessionIndexPath(root));
 }
 
 export async function writeSessionIndex(root, events = []) {

@@ -4,6 +4,27 @@ All notable user-facing changes to RIGX will be documented here.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) principles. RIGX is pre-1.0, so command output and schemas can still change between alpha releases.
 
+## [0.1.0-alpha.3] - 2026-09-02
+
+### Added
+
+- `rigx recurrence` for cross-session recurrence detection (`recurring-search-heavy-sessions`, `recurring-tool-failures`, `recurring-verification-skips`) and a per-agent comparison, reading the existing local session index.
+- `verification-skipped` deterministic pattern finding: a session changed files but recorded no verification-category tool call.
+- A `confidence` field (`low`/`medium`/`high`) on every `rigx patterns`, `rigx doctor`, and `rigx recurrence` finding, reflecting how strong the evidence is on its own.
+- Session index schema v2: a persisted `verification` tool-start category, with in-place migration of existing v1 index files (no data loss, no re-index required).
+- `readSessionIndex()` as the exported read path other commands build on.
+- Tests for the above, including a v1-to-v2 index migration regression test and confidence-level assertions.
+
+### Fixed
+
+- `rigx --version` now reads the version from `package.json` at runtime instead of a hardcoded string that had gone stale after the last release bump.
+- `scripts/package-smoke.js` now asserts the installed CLI's version against `package.json` instead of a hardcoded string; it had been silently matching the same stale value as the `--version` bug above and would not have caught a real regression.
+
+### Changed
+
+- Checked off cross-session recurrence, skipped-verification detection, recommendation confidence, and per-agent pattern comparison in `ROADMAP.md`'s Phase 2 list; instruction conflict evidence and context/harness waste signals remain open.
+- Added a dedicated regression test for the existing `instructions.duplicates` doctor finding.
+
 ## [0.1.0-alpha.2] - 2026-09-02
 
 ### Added

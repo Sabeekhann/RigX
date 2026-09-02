@@ -42,6 +42,8 @@ The current `observe` command does **not** persist normalized events. `rigx patt
 
 `rigx index` is an explicit, repository-local persistence boundary. It requires an initialized strict metadata-only configuration and writes an ignored `.rigx/state/session-index.json` file. The index contains only opaque session identifiers, adapter-controlled agent identifiers, optional normalized timestamps, lifecycle presence, and bounded event/tool/category counts. It does not persist normalized event records, tool names, raw payloads, or any excluded content listed above. Dedicated regression tests place private markers in supplied payloads and verify they do not enter the index.
 
+`rigx recurrence` only reads that same index back; it does not read raw transcripts, does not add any new persisted fields, and does not make network requests. Its output (cross-session findings and a per-agent comparison) is built entirely from the bounded counts already described above.
+
 ## Harness snapshots
 
 `rigx snapshot` stores a repository-local baseline at `.rigx/harness.lock.json`.

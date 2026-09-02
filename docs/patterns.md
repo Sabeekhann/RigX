@@ -49,12 +49,17 @@ Fires when a tool records a failed completion and is later started again for the
 
 Fires when the last observed `verification`-category tool call in a session ended in failure and the session ended without a later verification-category start for that tool. Verification classification is derived from the shell command text at adapter time (matching known test/lint/build/typecheck commands) and the raw command is discarded immediately — it is never present in the finding or any persisted state.
 
+### Verification skipped
+
+Fires when a session records at least one `filesystem`-category tool start (a file was changed) but ends with zero `verification`-category tool starts. This is deliberately low-confidence and informational: it says no verification command was *observed*, not that the agent skipped one — event coverage can be partial. See [recurrence.md](recurrence.md) for the cross-session version of this signal, which is stronger evidence when it recurs.
+
 ## Evidence contract
 
 Every finding contains:
 
 - a stable detector code;
 - severity;
+- a `confidence` level (`low`, `medium`, or `high`) reflecting how strong the evidence is on its own — a single-session finding is rarely more than `low`/`medium`; recurrence across sessions (see [recurrence.md](recurrence.md)) is what earns higher confidence;
 - opaque session identifier when available;
 - deterministic evidence values;
 - a recommendation that does not overstate what the evidence proves.

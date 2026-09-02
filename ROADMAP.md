@@ -26,13 +26,13 @@ RIGX is being built from deterministic foundations outward. Dates are intentiona
 
 ## Phase 2 — harness diagnosis 🚧 in progress
 
-- cross-session recurrence for search/repetition/failure patterns
-- skipped-verification detection
-- instruction duplication evidence
-- instruction conflict evidence where deterministically provable
-- context/harness waste signals
-- recommendation confidence and evidence
-- per-agent pattern comparison
+- [x] cross-session recurrence for search/repetition/failure patterns
+- [x] skipped-verification detection
+- [x] instruction duplication evidence
+- [ ] instruction conflict evidence where deterministically provable
+- [ ] context/harness waste signals
+- [x] recommendation confidence and evidence
+- [x] per-agent pattern comparison
 
 ## Phase 3 — harness proposals
 

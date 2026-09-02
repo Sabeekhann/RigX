@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { runAgents } from './commands/agents.js';
 import { runDoctor } from './commands/doctor.js';
 import { runInit } from './commands/init.js';
@@ -5,10 +6,13 @@ import { runIndex } from './commands/index.js';
 import { runObserve } from './commands/observe.js';
 import { runPatterns } from './commands/patterns.js';
 import { runPrivacy } from './commands/privacy.js';
+import { runRecurrence } from './commands/recurrence.js';
 import { runSnapshot } from './commands/snapshot.js';
 import { runStatus } from './commands/status.js';
 
-const HELP = `RIGX — local-first harness engineering for coding agents\n\nUsage:\n  rigx init [path] [--force]\n  rigx doctor [path] [--json]\n  rigx agents [--json] [--show-paths]\n  rigx privacy [path] [--json]\n  rigx observe --agent <claude-code|codex> [--input <file|->] [--json]\n  rigx patterns --agent <claude-code|codex> [--input <file|->] [--json]\n  rigx index [path] --agent <claude-code|codex> [--input <file|->] [--json]\n  rigx snapshot [path] [--json]\n  rigx status [path] [--json]\n  rigx --help\n  rigx --version\n\nPrivacy:\n  Strict mode is the default. Core commands make no network requests.\n`;
+const PACKAGE_VERSION = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8')).version;
+
+const HELP = `RIGX — local-first harness engineering for coding agents\n\nUsage:\n  rigx init [path] [--force]\n  rigx doctor [path] [--json]\n  rigx agents [--json] [--show-paths]\n  rigx privacy [path] [--json]\n  rigx observe --agent <claude-code|codex> [--input <file|->] [--json]\n  rigx patterns --agent <claude-code|codex> [--input <file|->] [--json]\n  rigx index [path] --agent <claude-code|codex> [--input <file|->] [--json]\n  rigx recurrence [path] [--json]\n  rigx snapshot [path] [--json]\n  rigx status [path] [--json]\n  rigx --help\n  rigx --version\n\nPrivacy:\n  Strict mode is the default. Core commands make no network requests.\n`;
 
 function positional(args, fallback = '.') {
   return args.find((arg) => !arg.startsWith('-')) ?? fallback;
@@ -34,7 +38,7 @@ export async function runCli(argv) {
     return 0;
   }
   if (argv.includes('--version') || argv.includes('-v')) {
-    process.stdout.write('0.1.0-alpha.1\n');
+    process.stdout.write(`${PACKAGE_VERSION}\n`);
     return 0;
   }
 
@@ -72,6 +76,7 @@ export async function runCli(argv) {
         input: optionValue(args, '--input', '-'),
         json: args.includes('--json'),
       }); break;
+      case 'recurrence': output = await runRecurrence(positional(args), args.includes('--json')); break;
       case 'snapshot': output = await runSnapshot(positional(args), args.includes('--json')); break;
       case 'status': output = await runStatus(positional(args), args.includes('--json')); break;
       default:

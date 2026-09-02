@@ -1,11 +1,11 @@
 import assert from 'node:assert/strict';
-import { mkdtemp, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 import { runIndex } from '../src/commands/index.js';
 import { createObservation } from '../src/core/observation.js';
-import { buildSessionSummaries, sessionIndexPath, writeSessionIndex } from '../src/core/session-index.js';
+import { buildSessionSummaries, readSessionIndex, sessionIndexPath, writeSessionIndex } from '../src/core/session-index.js';
 import { runInit } from '../src/commands/init.js';
 
 const SECRET = 'private-session-index-marker-8c7a';
@@ -73,4 +73,58 @@ test('index command normalizes an explicit stream and reports JSON metadata', as
 test('session indexing requires an initialized strict metadata-only boundary', async () => {
   const root = await mkdtemp(path.join(os.tmpdir(), 'rigx-index-uninitialized-'));
   await assert.rejects(() => writeSessionIndex(root, []), /rigx init/);
+});
+
+test('readSessionIndex reads back what writeSessionIndex persisted', async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'rigx-index-read-'));
+  await runInit(root);
+  const events = [createObservation({ agent: 'codex', kind: 'tool.start', sessionId: SECRET, toolName: 'Bash', toolCategoryOverride: 'verification' })];
+  await writeSessionIndex(root, events);
+  const index = await readSessionIndex(root);
+  assert.equal(index.sessions.length, 1);
+  assert.equal(index.sessions[0].counts.toolStartsByCategory.verification, 1);
+});
+
+test('readSessionIndex returns an empty index when no file has been written yet', async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'rigx-index-empty-'));
+  const index = await readSessionIndex(root);
+  assert.deepEqual(index.sessions, []);
+});
+
+test('a v1 session index without the verification category migrates cleanly', async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'rigx-index-migrate-'));
+  await runInit(root);
+  const v1Index = {
+    schemaVersion: 1,
+    privacy: { mode: 'strict', rawContentStored: false, fullPathsStored: false },
+    sessions: [{
+      agent: 'codex',
+      session: 'a'.repeat(20),
+      firstObservedAt: null,
+      lastObservedAt: null,
+      lifecycle: { started: true, ended: true },
+      counts: {
+        events: 2,
+        toolStarts: 1,
+        toolEnds: 1,
+        toolFailures: 0,
+        agentErrors: 0,
+        toolStartsByCategory: { shell: 1, filesystem: 0, search: 0, network: 0, subagent: 0, other: 0 },
+      },
+    }],
+  };
+  await mkdir(path.dirname(sessionIndexPath(root)), { recursive: true });
+  await writeFile(sessionIndexPath(root), `${JSON.stringify(v1Index)}\n`, 'utf8');
+  const index = await readSessionIndex(root);
+  assert.equal(index.schemaVersion, 2);
+  assert.equal(index.sessions[0].counts.toolStartsByCategory.verification, 0);
+  assert.equal(index.sessions[0].counts.toolStartsByCategory.shell, 1);
+});
+
+test('readSessionIndex rejects a session index with an unsupported schema version', async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'rigx-index-unsupported-'));
+  await runInit(root);
+  await mkdir(path.dirname(sessionIndexPath(root)), { recursive: true });
+  await writeFile(sessionIndexPath(root), `${JSON.stringify({ schemaVersion: 99, sessions: [] })}\n`, 'utf8');
+  await assert.rejects(() => readSessionIndex(root), /Unsupported session index schema/);
 });
