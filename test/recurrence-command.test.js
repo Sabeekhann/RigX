@@ -41,3 +41,20 @@ test('recurrence surfaces cross-session recurrence findings and a per-agent comp
   assert.equal(output.agents['claude-code'].sessions, 3);
   assert.equal(output.agents.codex.sessions, 1);
 });
+
+test('recurrence renders findings and the per-agent comparison as text', async () => {
+  const root = await indexedRepo([
+    ['claude-code', 'session-a', 1],
+    ['claude-code', 'session-b', 1],
+    ['claude-code', 'session-c', 1],
+    ['codex', 'session-d', 0],
+  ]);
+
+  const output = await runRecurrence(root, false);
+  assert.match(output, /RIGX Recurrence/);
+  assert.match(output, /WARNING recurring-tool-failures \(confidence: low\)/);
+  assert.match(output, /Recommendation:/);
+  assert.match(output, /Per-agent comparison/);
+  assert.match(output, /claude-code: sessions=3/);
+  assert.match(output, /codex: sessions=1/);
+});

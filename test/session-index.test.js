@@ -120,3 +120,11 @@ test('a v1 session index without the verification category migrates cleanly', as
   assert.equal(index.sessions[0].counts.toolStartsByCategory.verification, 0);
   assert.equal(index.sessions[0].counts.toolStartsByCategory.shell, 1);
 });
+
+test('readSessionIndex rejects a session index with an unsupported schema version', async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'rigx-index-unsupported-'));
+  await runInit(root);
+  await mkdir(path.dirname(sessionIndexPath(root)), { recursive: true });
+  await writeFile(sessionIndexPath(root), `${JSON.stringify({ schemaVersion: 99, sessions: [] })}\n`, 'utf8');
+  await assert.rejects(() => readSessionIndex(root), /Unsupported session index schema/);
+});
