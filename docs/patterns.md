@@ -41,6 +41,14 @@ Fires when normalized `agent.error` events are present. Strict output stores onl
 
 Fires when a supplied stream contains `session.end` but more tool starts than tool completions. This is deliberately informational because incomplete hook/event coverage can produce the same shape.
 
+### Retry after failure
+
+Fires when a tool records a failed completion and is later started again for the same normalized tool name in the same session. Evidence includes the tool name and retry count; severity is informational for a single retry and a warning at two or more, since a single retry can be normal recovery.
+
+### Unretried verification failure
+
+Fires when the last observed `verification`-category tool call in a session ended in failure and the session ended without a later verification-category start for that tool. Verification classification is derived from the shell command text at adapter time (matching known test/lint/build/typecheck commands) and the raw command is discarded immediately — it is never present in the finding or any persisted state.
+
 ## Evidence contract
 
 Every finding contains:

@@ -1,4 +1,5 @@
 import { createObservation } from '../core/observation.js';
+import { isVerificationCommand } from '../core/verification.js';
 
 function eventType(payload) {
   return payload?.type ?? payload?.method ?? payload?.event ?? null;
@@ -22,6 +23,13 @@ function toolName(payload) {
   return payload?.item?.type ?? payload?.item?.name ?? payload?.tool_name ?? payload?.tool ?? null;
 }
 
+// Reads the raw command only long enough to classify it; the string itself is
+// never forwarded into the returned observation.
+function toolCategoryOverride(payload) {
+  const command = payload?.item?.command ?? payload?.command;
+  return isVerificationCommand(command) ? 'verification' : undefined;
+}
+
 export function normalizeCodexEvent(payload) {
   const sourceEvent = eventType(payload);
   const mapped = mapType(sourceEvent);
@@ -35,6 +43,7 @@ export function normalizeCodexEvent(payload) {
     sessionId: payload.thread_id ?? payload.session_id ?? payload.conversation_id,
     toolName: toolName(payload),
     outcome,
+    toolCategoryOverride: toolCategoryOverride(payload),
     metadata: {
       sourceEvent,
       errorPresent: outcome === 'failure',

@@ -20,6 +20,9 @@ function newSessionSummary(session) {
     startsByTool: new Map(),
     failuresByTool: new Map(),
     startsByCategory: new Map(),
+    retriesByTool: new Map(),
+    lastOutcomeByTool: new Map(),
+    lastVerificationEvent: null,
   };
 }
 
@@ -51,15 +54,31 @@ function summarizeSession(events, session) {
 
     if (event.kind === 'tool.start') {
       summary.toolStarts += 1;
-      increment(summary.startsByTool, toolKey(event));
+      const key = toolKey(event);
+      increment(summary.startsByTool, key);
       increment(summary.startsByCategory, event.tool?.category ?? 'other');
+
+      if (summary.lastOutcomeByTool.get(key) === 'failure') {
+        increment(summary.retriesByTool, key);
+        summary.lastOutcomeByTool.delete(key);
+      }
+
+      if (event.tool?.category === 'verification') {
+        summary.lastVerificationEvent = { kind: 'start', toolName: key };
+      }
     }
 
     if (event.kind === 'tool.end') {
       summary.toolEnds += 1;
+      const key = toolKey(event);
       if (event.outcome === 'failure') {
         summary.failures += 1;
-        increment(summary.failuresByTool, toolKey(event));
+        increment(summary.failuresByTool, key);
+      }
+      if (event.outcome) summary.lastOutcomeByTool.set(key, event.outcome);
+
+      if (event.tool?.category === 'verification') {
+        summary.lastVerificationEvent = { kind: 'end', toolName: key, outcome: event.outcome };
       }
     }
   }
@@ -118,6 +137,34 @@ function analyzeSession(summary) {
       title: 'Agent error events were observed.',
       evidence: { errors: summary.agentErrors },
       recommendation: 'Inspect the local source event stream for the underlying error content; strict RIGX findings intentionally do not retain it.',
+    }));
+  }
+
+  for (const [toolName, count] of summary.retriesByTool.entries()) {
+    findings.push(finding({
+      code: 'retry-after-failure',
+      severity: count >= 2 ? 'warning' : 'info',
+      session: summary.session,
+      title: 'A tool was restarted after a failed completion in the same session.',
+      evidence: { toolName: toolName === '__unknown_tool__' ? null : toolName, retries: count },
+      recommendation: 'A single retry can be normal recovery; repeated retries across sessions suggest a harness or permissions gap worth fixing at the source.',
+    }));
+  }
+
+  if (
+    summary.sessionEnded &&
+    summary.lastVerificationEvent?.kind === 'end' &&
+    summary.lastVerificationEvent.outcome === 'failure'
+  ) {
+    findings.push(finding({
+      code: 'unretried-verification-failure',
+      severity: 'warning',
+      session: summary.session,
+      title: 'The last observed verification command failed and was not re-run before the session ended.',
+      evidence: {
+        toolName: summary.lastVerificationEvent.toolName === '__unknown_tool__' ? null : summary.lastVerificationEvent.toolName,
+      },
+      recommendation: 'Confirm whether the agent addressed the failing check; ending a session on a failing test/lint/build command is a harness signal worth investigating.',
     }));
   }
 

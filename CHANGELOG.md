@@ -4,10 +4,14 @@ All notable user-facing changes to RIGX will be documented here.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) principles. RIGX is pre-1.0, so command output and schemas can still change between alpha releases.
 
-## [Unreleased]
+## [0.1.0-alpha.2] - 2026-09-02
 
 ### Added
 
+- `retry-after-failure` deterministic pattern finding: a tool restarted after a failed completion in the same session.
+- `unretried-verification-failure` deterministic pattern finding: a session ended on a failing test/lint/build/typecheck command with no later verification retry.
+- A `verification` tool category, derived at adapter time from known test/lint/build/typecheck command shapes (e.g. `npm test`, `pytest`, `eslint`, `tsc`) without retaining the underlying command text.
+- Privacy regression tests proving verification classification and the new pattern findings never retain the source command string.
 - `rigx index` for explicit, ignored, strict-mode local session summaries without raw event or tool-name persistence.
 - Privacy regression tests for the repository-local session index and its initialization boundary.
 - Added the RIGX visual identity and cowboy/lasso mascot branding to the repository README.
@@ -28,6 +32,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) prin
 
 ### Changed
 
+- Marked Phase 1 (structured observation) complete in `ROADMAP.md` now that retry/verification signals and the local session index have shipped; Phase 2 (harness diagnosis) is now in progress.
 - Synchronized the README and roadmap with the implemented `rigx patterns` command and current Phase 1 progress.
 - Expanded README and repository documentation for the RIGX product direction.
 - Package metadata now reflects the public GitHub repository and Apache-2.0 license.
