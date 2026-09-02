@@ -75,3 +75,36 @@ test('unsupported vendor events are ignored instead of guessed', () => {
   assert.equal(normalizeClaudeEvent({ hook_event_name: 'SomethingNew' }), null);
   assert.equal(normalizeCodexEvent({ type: 'future.unknown.event' }), null);
 });
+
+test('Claude adapter classifies a known verification command without retaining it', () => {
+  const event = normalizeClaudeEvent({
+    hook_event_name: 'PreToolUse',
+    session_id: 'session-123',
+    tool_name: 'Bash',
+    tool_input: { command: 'npm run test' },
+  });
+  const serialized = JSON.stringify(event);
+  assert.equal(event.tool.category, 'verification');
+  assert.ok(!serialized.includes('npm run test'));
+});
+
+test('Claude adapter leaves unrelated Bash commands classified as shell', () => {
+  const event = normalizeClaudeEvent({
+    hook_event_name: 'PreToolUse',
+    session_id: 'session-123',
+    tool_name: 'Bash',
+    tool_input: { command: 'ls -la' },
+  });
+  assert.equal(event.tool.category, 'shell');
+});
+
+test('Codex adapter classifies a known verification command from the item payload without retaining it', () => {
+  const event = normalizeCodexEvent({
+    type: 'item.completed',
+    thread_id: 'thread-123',
+    item: { type: 'command_execution', command: 'pytest -q' },
+  });
+  const serialized = JSON.stringify(event);
+  assert.equal(event.tool.category, 'verification');
+  assert.ok(!serialized.includes('pytest -q'));
+});

@@ -86,9 +86,12 @@ Tool names are deterministically grouped into coarse categories:
 - `search`
 - `network`
 - `subagent`
+- `verification`
 - `other`
 
 The raw command, file target, URL, query, and content are not retained by the strict schema.
+
+`verification` overrides a shell-classified tool when the adapter recognizes the underlying command as a known test, lint, build, or typecheck invocation (for example `npm test`, `pytest`, `eslint`, `tsc`). Adapters read the raw command only long enough to run this classification; the command text itself is discarded and never appears in the normalized event, `rigx patterns` findings, or the session index.
 
 ## Local session index
 

@@ -56,7 +56,8 @@ The current implementation is deliberately small and deterministic. It provides 
 | `rigx agents` | Detects local Claude Code and Codex data surfaces without parsing transcript contents in strict mode. |
 | `rigx privacy [path]` | Shows the active privacy guarantees. |
 | `rigx observe --agent <claude-code|codex>` | Normalizes explicitly supplied structured agent events without persisting raw content. |
-| `rigx patterns --agent <claude-code|codex>` | Detects deterministic failure, repetition, search, agent-error, and event-coverage patterns in an explicitly supplied event stream. |
+| `rigx patterns --agent <claude-code|codex>` | Detects deterministic failure, repetition, search, agent-error, retry, verification-failure, and event-coverage patterns in an explicitly supplied event stream. |
+| `rigx index [path] --agent <claude-code|codex>` | Writes explicit, strict-mode-only session summaries to a repository-local, git-ignored index. |
 | `rigx snapshot [path]` | Creates a content-free SHA-256 baseline of harness surfaces. |
 | `rigx status [path]` | Reports harness drift against the baseline. |
 

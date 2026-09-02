@@ -18,7 +18,10 @@ export function opaqueId(value) {
   return createHash('sha256').update(String(value)).digest('hex').slice(0, 20);
 }
 
-export function classifyTool(toolName) {
+const CATEGORY_OVERRIDES = new Set(['verification']);
+
+export function classifyTool(toolName, categoryOverride) {
+  if (CATEGORY_OVERRIDES.has(categoryOverride)) return categoryOverride;
   const name = String(toolName ?? '').toLowerCase();
   if (!name) return null;
   if (['bash', 'shell', 'terminal', 'exec', 'command_execution'].some((part) => name.includes(part))) return 'shell';
@@ -38,7 +41,7 @@ export function sanitizeMetadata(metadata = {}) {
   return result;
 }
 
-export function createObservation({ agent, kind, timestamp, sessionId, toolName, outcome, metadata = {} }) {
+export function createObservation({ agent, kind, timestamp, sessionId, toolName, outcome, metadata = {}, toolCategoryOverride }) {
   if (!agent) throw new Error('Observation agent is required.');
   if (!kind) throw new Error('Observation kind is required.');
 
@@ -49,7 +52,7 @@ export function createObservation({ agent, kind, timestamp, sessionId, toolName,
     kind: String(kind),
     timestamp: timestamp ? new Date(timestamp).toISOString() : null,
     session: opaqueId(sessionId),
-    tool: safeToolName ? { name: safeToolName, category: classifyTool(safeToolName) } : null,
+    tool: safeToolName ? { name: safeToolName, category: classifyTool(safeToolName, toolCategoryOverride) } : null,
     outcome: outcome ?? null,
     metadata: sanitizeMetadata(metadata),
     privacy: { mode: 'strict', rawContentStored: false, fullPathsStored: false },
