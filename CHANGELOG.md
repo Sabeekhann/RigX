@@ -4,6 +4,20 @@ All notable user-facing changes to RIGX will be documented here.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) principles. RIGX is pre-1.0, so command output and schemas can still change between alpha releases.
 
+## [0.1.0-alpha.4] - 2026-09-02
+
+### Added
+
+- `rigx doctor` finding `instructions.conflicts`: deterministic, syntactic "key: value" conflicts between agent instruction surfaces (e.g. `AGENTS.md` and `CLAUDE.md` declaring different values for the same declared key). Intentionally narrow — exact key match with different normalized values, not free-form contradiction inference.
+- `rigx doctor` finding `instructions.combined-size`: flags a large combined instruction surface (2+ files, 600+ total lines) even when no single file crosses the existing per-file threshold — a context/harness-waste signal.
+- `high-tool-volume-no-changes` deterministic pattern finding (`rigx patterns`): a session with 20+ tool starts and zero observed file changes.
+- `recurring-high-tool-volume-sessions` cross-session finding and a `highToolVolumeNoChangeRate` per-agent stat (`rigx recurrence`) — the cross-session counterpart of the above.
+- Tests for all of the above.
+
+### Changed
+
+- Completed Phase 2 (harness diagnosis) in `ROADMAP.md`: all 7 goals are now checked off, including instruction conflict evidence and context/harness waste signals.
+
 ## [0.1.0-alpha.3] - 2026-09-02
 
 ### Added

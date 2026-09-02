@@ -16,7 +16,7 @@ function renderAgentComparison(agents) {
   return names
     .map((name) => {
       const stats = agents[name];
-      return `${name}: sessions=${stats.sessions}, searchHeavyRate=${stats.searchHeavyRate}, toolFailureRate=${stats.toolFailureRate}, verificationSkipRate=${stats.verificationSkipRate}`;
+      return `${name}: sessions=${stats.sessions}, searchHeavyRate=${stats.searchHeavyRate}, toolFailureRate=${stats.toolFailureRate}, verificationSkipRate=${stats.verificationSkipRate}, highToolVolumeNoChangeRate=${stats.highToolVolumeNoChangeRate}`;
     })
     .join('\n');
 }

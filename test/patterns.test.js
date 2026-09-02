@@ -154,6 +154,31 @@ test('pattern engine does not report a verification skip without any file change
   assert.ok(!result.findings.some((item) => item.code === 'verification-skipped'));
 });
 
+test('pattern engine reports high tool volume without file changes', () => {
+  const events = Array.from({ length: 20 }, () => event({ kind: 'tool.start', toolName: 'Task' }));
+  const result = analyzePatterns(events);
+  const finding = result.findings.find((item) => item.code === 'high-tool-volume-no-changes');
+  assert.ok(finding);
+  assert.equal(finding.severity, 'info');
+  assert.equal(finding.confidence, 'low');
+  assert.deepEqual(finding.evidence, { toolStarts: 20 });
+});
+
+test('pattern engine does not report high tool volume when files were changed', () => {
+  const events = [
+    ...Array.from({ length: 19 }, () => event({ kind: 'tool.start', toolName: 'Task' })),
+    event({ kind: 'tool.start', toolName: 'Write' }),
+  ];
+  const result = analyzePatterns(events);
+  assert.ok(!result.findings.some((item) => item.code === 'high-tool-volume-no-changes'));
+});
+
+test('pattern engine does not report high tool volume below the threshold', () => {
+  const events = Array.from({ length: 19 }, () => event({ kind: 'tool.start', toolName: 'Task' }));
+  const result = analyzePatterns(events);
+  assert.ok(!result.findings.some((item) => item.code === 'high-tool-volume-no-changes'));
+});
+
 test('pattern engine returns no findings when deterministic thresholds are not crossed', () => {
   const result = analyzePatterns([
     event({ kind: 'tool.start', toolName: 'Read' }),

@@ -24,13 +24,13 @@ RIGX is being built from deterministic foundations outward. Dates are intentiona
 - [x] retry and verification signals
 - [x] local session index without raw transcript persistence by default
 
-## Phase 2 — harness diagnosis 🚧 in progress
+## Phase 2 — harness diagnosis ✅ alpha
 
 - [x] cross-session recurrence for search/repetition/failure patterns
 - [x] skipped-verification detection
 - [x] instruction duplication evidence
-- [ ] instruction conflict evidence where deterministically provable
-- [ ] context/harness waste signals
+- [x] instruction conflict evidence where deterministically provable
+- [x] context/harness waste signals
 - [x] recommendation confidence and evidence
 - [x] per-agent pattern comparison
 
