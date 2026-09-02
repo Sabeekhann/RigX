@@ -1,9 +1,10 @@
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, mkdirSync, rmSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, readFileSync, rmSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 
 const root = process.cwd();
+const expectedVersion = JSON.parse(readFileSync(path.join(root, 'package.json'), 'utf8')).version;
 const tempRoot = mkdtempSync(path.join(os.tmpdir(), 'rigx-package-smoke-'));
 const packDir = path.join(tempRoot, 'pack');
 const consumerDir = path.join(tempRoot, 'consumer');
@@ -35,8 +36,8 @@ try {
   npm(['install', '--ignore-scripts', '--no-audit', '--no-fund', packagePath], consumerDir, { capture: true });
 
   const version = npm(['exec', '--yes=false', '--', 'rigx', '--version'], consumerDir, { capture: true }).trim();
-  if (version !== '0.1.0-alpha.1') {
-    throw new Error(`Installed CLI reported unexpected version: ${version}`);
+  if (version !== expectedVersion) {
+    throw new Error(`Installed CLI reported unexpected version: ${version} (expected ${expectedVersion})`);
   }
 
   npm(['exec', '--yes=false', '--', 'rigx', '--help'], consumerDir, { capture: true });

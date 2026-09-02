@@ -164,8 +164,8 @@ export async function inventoryRepository(rootInput) {
   };
 }
 
-function finding(id, category, title, evidence, recommendation, deduction, severity = 'warning') {
-  return { id, category, severity, title, evidence, recommendation, deduction };
+function finding(id, category, title, evidence, recommendation, deduction, severity = 'warning', confidence = 'high') {
+  return { id, category, severity, confidence, title, evidence, recommendation, deduction };
 }
 
 async function duplicateInstructionEvidence(root, files) {
@@ -232,6 +232,8 @@ export async function analyzeRepository(inventory) {
       duplicates,
       'Prefer one canonical source for shared rules and project them into vendor-specific surfaces where possible.',
       Math.min(10, 2 + duplicates.length * 2),
+      'warning',
+      'medium',
     ));
   }
 

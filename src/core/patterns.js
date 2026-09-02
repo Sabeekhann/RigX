@@ -1,4 +1,4 @@
-export const PATTERN_SCHEMA_VERSION = 1;
+export const PATTERN_SCHEMA_VERSION = 2;
 
 function sessionKey(event) {
   return event.session ?? '__sessionless__';
@@ -34,10 +34,11 @@ function publicSession(session) {
   return session === '__sessionless__' ? null : session;
 }
 
-function finding({ code, severity, session, title, evidence, recommendation }) {
+function finding({ code, severity, confidence = 'low', session, title, evidence, recommendation }) {
   return {
     code,
     severity,
+    confidence,
     session: publicSession(session),
     title,
     evidence,
@@ -93,6 +94,7 @@ function analyzeSession(summary) {
     findings.push(finding({
       code: 'repeated-tool-failures',
       severity: 'warning',
+      confidence: 'medium',
       session: summary.session,
       title: 'The same tool failed repeatedly in one observed session.',
       evidence: { toolName: toolName === '__unknown_tool__' ? null : toolName, failures: count },
@@ -133,6 +135,7 @@ function analyzeSession(summary) {
     findings.push(finding({
       code: 'agent-errors-observed',
       severity: 'warning',
+      confidence: 'medium',
       session: summary.session,
       title: 'Agent error events were observed.',
       evidence: { errors: summary.agentErrors },
@@ -144,6 +147,7 @@ function analyzeSession(summary) {
     findings.push(finding({
       code: 'retry-after-failure',
       severity: count >= 2 ? 'warning' : 'info',
+      confidence: count >= 2 ? 'medium' : 'low',
       session: summary.session,
       title: 'A tool was restarted after a failed completion in the same session.',
       evidence: { toolName: toolName === '__unknown_tool__' ? null : toolName, retries: count },
@@ -159,12 +163,27 @@ function analyzeSession(summary) {
     findings.push(finding({
       code: 'unretried-verification-failure',
       severity: 'warning',
+      confidence: 'medium',
       session: summary.session,
       title: 'The last observed verification command failed and was not re-run before the session ended.',
       evidence: {
         toolName: summary.lastVerificationEvent.toolName === '__unknown_tool__' ? null : summary.lastVerificationEvent.toolName,
       },
       recommendation: 'Confirm whether the agent addressed the failing check; ending a session on a failing test/lint/build command is a harness signal worth investigating.',
+    }));
+  }
+
+  const filesystemStarts = summary.startsByCategory.get('filesystem') ?? 0;
+  const verificationStarts = summary.startsByCategory.get('verification') ?? 0;
+  if (summary.sessionEnded && filesystemStarts > 0 && verificationStarts === 0) {
+    findings.push(finding({
+      code: 'verification-skipped',
+      severity: 'info',
+      confidence: 'low',
+      session: summary.session,
+      title: 'Files were changed but no verification command was observed in the session.',
+      evidence: { filesystemCalls: filesystemStarts },
+      recommendation: 'A single session proves little on its own; check whether this recurs before concluding verification is being skipped.',
     }));
   }
 

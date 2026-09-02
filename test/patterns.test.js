@@ -15,7 +15,19 @@ test('pattern engine reports repeated failures with deterministic evidence', () 
   const finding = result.findings.find((item) => item.code === 'repeated-tool-failures');
   assert.ok(finding);
   assert.equal(finding.severity, 'warning');
+  assert.equal(finding.confidence, 'medium');
   assert.deepEqual(finding.evidence, { toolName: 'Bash', failures: 2 });
+});
+
+test('every pattern finding carries a confidence field', () => {
+  const result = analyzePatterns([
+    event({ kind: 'tool.end', toolName: 'Bash', outcome: 'failure' }),
+    event({ kind: 'tool.end', toolName: 'Bash', outcome: 'failure' }),
+  ]);
+  assert.ok(result.findings.length > 0);
+  for (const item of result.findings) {
+    assert.ok(['low', 'medium', 'high'].includes(item.confidence));
+  }
 });
 
 test('pattern engine reports high repetition and search-heavy sessions only above thresholds', () => {
@@ -104,6 +116,42 @@ test('pattern engine does not report an unretried verification failure when it i
     event({ kind: 'session.end' }),
   ]);
   assert.ok(!result.findings.some((item) => item.code === 'unretried-verification-failure'));
+});
+
+function filesystemEvent({ kind, sessionId = 'session-a' }) {
+  return createObservation({ agent: 'test-agent', kind, sessionId, toolName: 'Write' });
+}
+
+test('pattern engine reports a verification skip when files changed but no verification command ran', () => {
+  const result = analyzePatterns([
+    filesystemEvent({ kind: 'tool.start' }),
+    filesystemEvent({ kind: 'tool.end' }),
+    event({ kind: 'session.end' }),
+  ]);
+  const finding = result.findings.find((item) => item.code === 'verification-skipped');
+  assert.ok(finding);
+  assert.equal(finding.severity, 'info');
+  assert.equal(finding.confidence, 'low');
+  assert.deepEqual(finding.evidence, { filesystemCalls: 1 });
+});
+
+test('pattern engine does not report a verification skip when a verification command ran', () => {
+  const result = analyzePatterns([
+    filesystemEvent({ kind: 'tool.start' }),
+    filesystemEvent({ kind: 'tool.end' }),
+    verificationEvent({ kind: 'tool.start' }),
+    verificationEvent({ kind: 'tool.end', outcome: 'success' }),
+    event({ kind: 'session.end' }),
+  ]);
+  assert.ok(!result.findings.some((item) => item.code === 'verification-skipped'));
+});
+
+test('pattern engine does not report a verification skip without any file changes', () => {
+  const result = analyzePatterns([
+    event({ kind: 'tool.start', toolName: 'Task' }),
+    event({ kind: 'session.end' }),
+  ]);
+  assert.ok(!result.findings.some((item) => item.code === 'verification-skipped'));
 });
 
 test('pattern engine returns no findings when deterministic thresholds are not crossed', () => {

@@ -91,7 +91,7 @@ Tool names are deterministically grouped into coarse categories:
 
 The raw command, file target, URL, query, and content are not retained by the strict schema.
 
-`verification` overrides a shell-classified tool when the adapter recognizes the underlying command as a known test, lint, build, or typecheck invocation (for example `npm test`, `pytest`, `eslint`, `tsc`). Adapters read the raw command only long enough to run this classification; the command text itself is discarded and never appears in the normalized event, `rigx patterns` findings, or the session index.
+`verification` overrides a shell-classified tool when the adapter recognizes the underlying command as a known test, lint, build, or typecheck invocation (for example `npm test`, `pytest`, `eslint`, `tsc`). Adapters read the raw command only long enough to run this classification; the command text itself is discarded and never appears in the normalized event, `rigx patterns` findings, or the session index — only the derived category count is ever persisted.
 
 ## Local session index
 
@@ -109,4 +109,6 @@ The index stores only:
 
 It does not persist normalized events, tool names, raw vendor payloads, prompts, responses, source code, commands, tool input/output, working directories, file paths, or raw session identifiers. Re-indexing the same opaque agent/session replaces its summary rather than duplicating counts.
 
-See [patterns.md](patterns.md) for the current deterministic detector contract.
+The index schema is versioned (`SESSION_INDEX_SCHEMA_VERSION`). Schema v2 added the `verification` tool-start category alongside the existing coarse categories; a v1 index (written before that category existed) is read and migrated in place — its sessions gain a zero-filled `verification` count rather than being rejected — the next write persists it as v2. `readSessionIndex(root)` is the read-side entry point other commands build on.
+
+See [patterns.md](patterns.md) for the current single-session deterministic detector contract, and [recurrence.md](recurrence.md) for detectors that read the index back to look for recurrence across sessions.

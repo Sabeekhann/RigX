@@ -58,6 +58,7 @@ The current implementation is deliberately small and deterministic. It provides 
 | `rigx observe --agent <claude-code|codex>` | Normalizes explicitly supplied structured agent events without persisting raw content. |
 | `rigx patterns --agent <claude-code|codex>` | Detects deterministic failure, repetition, search, agent-error, retry, verification-failure, and event-coverage patterns in an explicitly supplied event stream. |
 | `rigx index [path] --agent <claude-code|codex>` | Writes explicit, strict-mode-only session summaries to a repository-local, git-ignored index. |
+| `rigx recurrence [path]` | Detects cross-session recurrence of failure, search-heavy, and verification-skip patterns from the indexed sessions, plus a per-agent comparison. |
 | `rigx snapshot [path]` | Creates a content-free SHA-256 baseline of harness surfaces. |
 | `rigx status [path]` | Reports harness drift against the baseline. |
 
@@ -219,10 +220,9 @@ isolated evaluation
 promote proven improvement or reject regression
 ```
 
-Current per-stream diagnostics already cover repeated failures, high tool repetition, search-heavy sessions, agent errors, and incomplete tool activity. Planned capabilities include:
+Current per-stream diagnostics already cover repeated failures, high tool repetition, search-heavy sessions, agent errors, retries, verification skips/failures, and incomplete tool activity — plus, via `rigx recurrence`, cross-session recurrence of those same patterns and a per-agent comparison. Planned capabilities include:
 
-- cross-session recurrence for existing deterministic patterns
-- skipped-verification detection
+- instruction conflict evidence where deterministically provable
 - context/harness waste signals
 - reviewable skill, hook, instruction, and documentation proposals
 - isolated worktree A/B evaluation

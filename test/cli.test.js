@@ -1,6 +1,9 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import { runCli } from '../src/cli.js';
+
+const PACKAGE_VERSION = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8')).version;
 
 async function capture(stream, fn) {
   let value = '';
@@ -17,16 +20,16 @@ async function capture(stream, fn) {
   }
 }
 
-test('version reports the package alpha version', async () => {
+test('version reports the same version declared in package.json', async () => {
   const result = await capture(process.stdout, () => runCli(['--version']));
   assert.equal(result.code, 0);
-  assert.equal(result.value.trim(), '0.1.0-alpha.1');
+  assert.equal(result.value.trim(), PACKAGE_VERSION);
 });
 
 test('help documents the deterministic alpha command surface', async () => {
   const result = await capture(process.stdout, () => runCli(['--help']));
   assert.equal(result.code, 0);
-  for (const command of ['init', 'doctor', 'agents', 'privacy', 'observe', 'patterns', 'index', 'snapshot', 'status']) {
+  for (const command of ['init', 'doctor', 'agents', 'privacy', 'observe', 'patterns', 'index', 'recurrence', 'snapshot', 'status']) {
     assert.match(result.value, new RegExp(`rigx ${command}`));
   }
 });
