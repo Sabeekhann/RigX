@@ -9,7 +9,8 @@ The current core CLI:
 - has zero runtime third-party dependencies;
 - contains no product telemetry;
 - requires no RIGX account;
-- makes no network requests of its own in core commands (the one exception, `rigx evaluate`, is documented below — it never makes network requests itself, but executes the repository's own scripts, which can);
+- makes no network requests of its own in core commands (the exceptions, `rigx evaluate` and `rigx candidate`, are documented below — neither makes network requests itself, but both execute the repository's own scripts, which can);
+- never mutates the caller's real repository: `rigx candidate` writes only inside a throwaway worktree that is always removed before the command returns.
 - does not upload repository content, prompts, responses, or agent sessions.
 
 The default configuration created by `rigx init` is `strict` mode.
@@ -47,6 +48,10 @@ The current `observe` command does **not** persist normalized events. `rigx patt
 ## Evaluation
 
 `rigx evaluate` is the one command that executes code rather than only inspecting or reading state. Given two Git refs, it checks each out into its own temporary worktree (never the caller's actual working directory) and runs that ref's own `test`/`lint`/`typecheck` scripts from `package.json` — nothing RigX invents, downloads, or fetches. Dependencies are not reinstalled (an existing `node_modules` is symlinked in, when present) specifically so `rigx evaluate` itself makes no network requests. A repository's own script can still make network requests, exactly as it would if a person ran that script directly — RigX does not sandbox or filter what the script itself does. Worktrees are always removed before the command returns, and `rigx evaluate` does not read or write `.rigx/` state, the session index, or any observation data. See [docs/evaluation.md](docs/evaluation.md).
+
+## Candidate verification
+
+`rigx candidate` applies one `rigx propose` proposal's literal file `patch` and verifies it, but only ever inside a temporary Git worktree of the repository's current `HEAD` — the same isolation model as `rigx evaluate`, reused directly. It never writes to the caller's actual working directory: not `package.json`, not any other file, not `.rigx/` state. Verification (when a patch adds a script) runs exactly that script inside the worktree; a `create-file` patch such as the CI workflow suggestion has no locally executable verification and is reported as such rather than assumed to work. The worktree is always removed before the command returns, whether verification passed, failed, or the patch itself could not be applied. See [docs/candidates.md](docs/candidates.md).
 
 ## Harness snapshots
 

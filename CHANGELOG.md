@@ -4,6 +4,20 @@ All notable user-facing changes to RIGX will be documented here.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) principles. RIGX is pre-1.0, so command output and schemas can still change between alpha releases.
 
+## [0.1.0-alpha.8] - 2026-09-03
+
+### Added
+
+- `rigx candidate`, the first Phase 5 command: given `--proposal <id>`, finds that proposal from a fresh `rigx propose` run, applies its literal file `patch` inside an isolated Git worktree of the repository's current `HEAD` (never the caller's real working directory), runs whatever verification is possible, and reports the outcome.
+- A `patch` field on `src/core/proposals.js` proposals with a literal, unambiguous file change: `verification-workflow.add-{test,lint,typecheck}-script` (a `json-merge` into `package.json`'s `scripts`) and `verification-workflow.add-ci-workflow` (a `create-file` at `.github/workflows/ci.yml`). Every other proposal still leaves `patch: null` — they involve wording/judgment, not a mechanical file change.
+- `docs/candidates.md` documenting which proposals are candidate-verifiable, how verification works, and the output shape.
+- Tests covering both patch types, a failed verification, refusing to overwrite an existing file, an unsupported (patchless) proposal, and worktree cleanup.
+
+### Changed
+
+- `verificationScriptSuggestion` in `src/core/proposals.js` is now backed by a structured `{ label, command }` lookup (`verificationScriptCommand`) so the display suggestion and the `patch` field share one source of truth instead of being derived independently.
+- `ROADMAP.md`'s Phase 5 now has 4 of 7 items checked off (learning from local trajectories, generating candidate changes, evaluating them, and rejecting regressions); the remaining three — promoting a change into the real repository and exporting it as a pull request — require RigX to mutate the caller's actual repository and/or call the GitHub API, a materially larger trust boundary flagged as a separate decision point.
+
 ## [0.1.0-alpha.7] - 2026-09-03
 
 ### Added

@@ -61,15 +61,17 @@ No automatic application by default.
 
 The four unchecked items require RigX to actually invoke a coding agent across repeated trials, which it does not do yet — RigX observes and analyzes agent activity, it does not run agents itself. `rigx evaluate` currently compares two Git refs' own deterministic verification scripts (test/lint/typecheck), not agent task outcomes.
 
-## Phase 5 — harness evolution
+## Phase 5 — harness evolution 🚧 in progress
 
-- learn from real local trajectories
-- generate candidate harness changes
-- evaluate candidates
-- reject regressions
-- promote proven improvements with user approval
-- export reviewable harness-improvement pull requests
-- maintain versionable harness baselines
+- [x] learn from real local trajectories (via `rigx propose`'s recurrence-derived proposals)
+- [x] generate candidate harness changes (the `patch` field on select `rigx propose` proposals)
+- [x] evaluate candidates (`rigx candidate`, in an isolated throwaway worktree)
+- [x] reject regressions (a failed verification script is reported, never silently accepted)
+- [ ] promote proven improvements with user approval
+- [ ] export reviewable harness-improvement pull requests
+- [ ] maintain versionable harness baselines
+
+The three unchecked items require RigX to mutate the caller's real repository and/or make GitHub API calls — a materially larger trust boundary than anything shipped so far, and a deliberate, separate decision point before building it.
 
 ## Non-goals
 

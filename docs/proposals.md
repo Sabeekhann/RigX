@@ -55,11 +55,14 @@ Every proposal is:
   "title": "Resolve conflicting values declared across instruction surfaces",
   "rationale": "Different agent surfaces declare different values for the same key",
   "findingIds": ["instructions.conflicts"],
-  "suggestion": "Pick one authoritative value for each key below and remove the conflicting line(s) from the other file(s):\n  - package manager: AGENTS.md: “npm” vs. CLAUDE.md: “pnpm”"
+  "suggestion": "Pick one authoritative value for each key below and remove the conflicting line(s) from the other file(s):\n  - package manager: AGENTS.md: “npm” vs. CLAUDE.md: “pnpm”",
+  "patch": null
 }
 ```
 
 `findingIds` always traces a proposal back to the deterministic `rigx doctor` finding(s) it is based on — a proposal is never presented without the evidence that produced it.
+
+`patch` is non-null only for the handful of proposals with a literal, unambiguous file change: `verification-workflow.add-{test,lint,typecheck}-script` (a `json-merge` into `package.json`'s `scripts`) and `verification-workflow.add-ci-workflow` (a `create-file` at `.github/workflows/ci.yml`). It is never applied automatically by `rigx propose` — it is what `rigx candidate` applies inside a throwaway worktree to verify the suggestion actually works. See [candidates.md](candidates.md). Every other proposal involves wording or judgment rather than a mechanical file change, so `patch` stays `null`.
 
 ## Privacy
 

@@ -8,8 +8,13 @@ export const PROPOSAL_SCHEMA_VERSION = 1;
 // writes to disk or mutates the repository; see AGENTS.md's "propose before
 // mutate" rule and ROADMAP.md's "No automatic application by default."
 
-function proposal({ id, category, title, rationale, findingIds, suggestion }) {
-  return { id, category, title, rationale, findingIds, suggestion };
+// `patch` is present only for proposals with a literal, unambiguous file
+// change (see docs/candidates.md) -- it is never applied automatically; it
+// is what `rigx candidate` applies inside a throwaway worktree to verify the
+// suggestion actually works. Proposals without one (most of them: they
+// involve wording/judgment, not a mechanical file change) leave it null.
+function proposal({ id, category, title, rationale, findingIds, suggestion, patch = null }) {
+  return { id, category, title, rationale, findingIds, suggestion, patch };
 }
 
 async function readJsonIfExists(target) {
@@ -52,22 +57,30 @@ function runCommand(packageManager, script, npmSpecialCase) {
   return `${packageManager ?? 'npm'} run ${script}`;
 }
 
-async function verificationScriptSuggestion(root, label) {
+// Returns { label, command } | null -- null means no confident deterministic
+// command exists (e.g. lint with no detected tool), so callers must fall back
+// to a display-only suggestion with no patch.
+async function verificationScriptCommand(root, label) {
   if (label === 'lint') {
     const tool = await detectLintTool(root);
-    if (tool === 'eslint') return '"lint": "eslint ."';
-    if (tool === 'biome') return '"lint": "biome check ."';
-    return '"lint": "<your lint command>"';
+    if (tool === 'eslint') return { label, command: 'eslint .' };
+    if (tool === 'biome') return { label, command: 'biome check .' };
+    return null;
   }
   if (label === 'typecheck') {
-    return '"typecheck": "tsc --noEmit"';
+    return { label, command: 'tsc --noEmit' };
   }
   const runner = await detectTestRunner(root);
-  if (runner === 'vitest') return '"test": "vitest run"';
-  if (runner === 'jest') return '"test": "jest"';
-  if (runner === 'mocha') return '"test": "mocha"';
-  if (runner === 'ava') return '"test": "ava"';
-  return '"test": "node --test"';
+  if (runner === 'vitest') return { label, command: 'vitest run' };
+  if (runner === 'jest') return { label, command: 'jest' };
+  if (runner === 'mocha') return { label, command: 'mocha' };
+  if (runner === 'ava') return { label, command: 'ava' };
+  return { label, command: 'node --test' };
+}
+
+function verificationScriptSuggestion(scriptCommand, label) {
+  if (!scriptCommand) return `"${label}": "<your lint command>"`;
+  return `"${scriptCommand.label}": "${scriptCommand.command}"`;
 }
 
 function ciWorkflowSuggestion(inventory) {
@@ -107,25 +120,31 @@ async function verificationProposals(root, inventory, findingsById) {
   for (const label of ['test', 'lint', 'typecheck']) {
     const finding = findingsById.get(`verification.missing-${label}`);
     if (!finding) continue;
+    const scriptCommand = await verificationScriptCommand(root, label);
     proposals.push(proposal({
       id: `verification-workflow.add-${label}-script`,
       category: 'verification-workflow',
       title: `Add a deterministic \`${label}\` script to package.json`,
       rationale: finding.title,
       findingIds: [finding.id],
-      suggestion: await verificationScriptSuggestion(root, label),
+      suggestion: verificationScriptSuggestion(scriptCommand, label),
+      patch: scriptCommand
+        ? { type: 'json-merge', file: 'package.json', mergePath: ['scripts'], values: { [scriptCommand.label]: scriptCommand.command } }
+        : null,
     }));
   }
 
   const noCi = findingsById.get('verification.no-ci');
   if (noCi) {
+    const ciYaml = ciWorkflowSuggestion(inventory);
     proposals.push(proposal({
       id: 'verification-workflow.add-ci-workflow',
       category: 'verification-workflow',
       title: 'Add a minimal CI workflow that runs the repository\'s verification scripts',
       rationale: noCi.title,
       findingIds: [noCi.id],
-      suggestion: `Suggested .github/workflows/ci.yml:\n\n${ciWorkflowSuggestion(inventory)}`,
+      suggestion: `Suggested .github/workflows/ci.yml:\n\n${ciYaml}`,
+      patch: { type: 'create-file', file: '.github/workflows/ci.yml', content: `${ciYaml}\n` },
     }));
   }
 
