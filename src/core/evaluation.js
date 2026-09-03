@@ -63,7 +63,11 @@ async function runScript(dir, packageManager, script) {
   const [command, args] = runArgs(packageManager, script);
   const startedAt = Date.now();
   try {
-    await execFileAsync(command, args, { cwd: dir, maxBuffer: MAX_BUFFER });
+    // npm/yarn/pnpm/bun are .cmd shims on Windows; child_process.execFile
+    // does not itself invoke a shell to interpret them (unlike a real .exe),
+    // so it fails to run them there without shell:true. This only affects
+    // Windows -- git is a real .exe everywhere and is invoked separately.
+    await execFileAsync(command, args, { cwd: dir, maxBuffer: MAX_BUFFER, shell: process.platform === 'win32' });
     return { script, outcome: 'success', durationMs: Date.now() - startedAt };
   } catch (error) {
     return {
