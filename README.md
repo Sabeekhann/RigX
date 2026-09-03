@@ -61,6 +61,7 @@ The current implementation is deliberately small and deterministic. It provides 
 | `rigx recurrence [path]` | Detects cross-session recurrence of failure, search-heavy, and verification-skip patterns from the indexed sessions, plus a per-agent comparison. |
 | `rigx propose [path]` | Turns a subset of `rigx doctor`/`rigx recurrence` findings into concrete, reviewable proposals (verification workflows, instruction restructuring, navigation docs, deterministic hooks, task-specific skills, recovery workflows). Never applies anything automatically. |
 | `rigx evaluate [path] --baseline <ref> --candidate <ref>` | Runs the repository's own test/lint/typecheck scripts in isolated Git worktrees for both refs and reports pass/fail, duration, and regressions. |
+| `rigx candidate [path] --proposal <id>` | Applies one `rigx propose` proposal's literal file patch inside a throwaway Git worktree and verifies it actually works. Never touches the real repository. |
 | `rigx snapshot [path]` | Creates a content-free SHA-256 baseline of harness surfaces. |
 | `rigx status [path]` | Reports harness drift against the baseline. |
 
@@ -224,11 +225,11 @@ isolated evaluation
 promote proven improvement or reject regression
 ```
 
-Current per-stream diagnostics already cover repeated failures, high tool repetition, search-heavy sessions, agent errors, retries, verification skips/failures, high-volume no-change sessions, and incomplete tool activity — plus, via `rigx recurrence`, cross-session recurrence of those same patterns and a per-agent comparison. `rigx doctor` additionally detects instruction conflicts and combined-instruction-surface size as harness-waste signals. `rigx propose` turns a subset of those findings (verification workflows, instruction restructuring, navigation docs, deterministic hooks, task-specific skills, recovery workflows) into reviewable suggestions — see [docs/proposals.md](docs/proposals.md). `rigx evaluate` compares two Git refs' own test/lint/typecheck scripts in isolated worktrees and reports regressions — see [docs/evaluation.md](docs/evaluation.md). Planned capabilities include:
+Current per-stream diagnostics already cover repeated failures, high tool repetition, search-heavy sessions, agent errors, retries, verification skips/failures, high-volume no-change sessions, and incomplete tool activity — plus, via `rigx recurrence`, cross-session recurrence of those same patterns and a per-agent comparison. `rigx doctor` additionally detects instruction conflicts and combined-instruction-surface size as harness-waste signals. `rigx propose` turns a subset of those findings (verification workflows, instruction restructuring, navigation docs, deterministic hooks, task-specific skills, recovery workflows) into reviewable suggestions — see [docs/proposals.md](docs/proposals.md). Select proposals carry a literal file patch that `rigx candidate` applies and verifies inside a throwaway Git worktree — see [docs/candidates.md](docs/candidates.md). `rigx evaluate` compares two Git refs' own test/lint/typecheck scripts in isolated worktrees and reports regressions — see [docs/evaluation.md](docs/evaluation.md). Planned capabilities include:
 
 - reviewable tool/MCP configuration proposals
 - repeated agent-trial comparison (task success, token/context usage, retry/tool-call/duration) once RigX can invoke a coding agent itself
-- user-approved harness evolution
+- promoting a verified candidate into the real repository with user approval, and exporting it as a reviewable pull request
 
 See [ROADMAP.md](ROADMAP.md) for the staged plan.
 

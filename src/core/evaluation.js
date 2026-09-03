@@ -59,7 +59,7 @@ function runArgs(packageManager, script) {
   return [packageManager ?? 'npm', ['run', script]];
 }
 
-async function runScript(dir, packageManager, script) {
+export async function runScript(dir, packageManager, script) {
   const [command, args] = runArgs(packageManager, script);
   const startedAt = Date.now();
   try {

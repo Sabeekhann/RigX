@@ -65,10 +65,34 @@ test('evaluate runs through the full CLI dispatcher and reports no regressions',
   assert.equal(output.regressions.length, 0);
 });
 
+test('candidate requires --proposal', async () => {
+  const result = await capture(process.stderr, () => runCli(['candidate', '.']));
+  assert.equal(result.code, 1);
+  assert.match(result.value, /--proposal/);
+});
+
+test('candidate runs through the full CLI dispatcher and applies a verified patch', async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'rigx-cli-candidate-'));
+  await git(['init', '--initial-branch=main'], root);
+  await git(['config', 'user.email', 'test@example.com'], root);
+  await git(['config', 'user.name', 'RIGX Test'], root);
+  await writeFile(path.join(root, 'package.json'), JSON.stringify({}), 'utf8');
+  await git(['add', '-A'], root);
+  await git(['commit', '-m', 'baseline with no test script'], root);
+
+  const result = await capture(process.stdout, () => runCli([
+    'candidate', root, '--proposal', 'verification-workflow.add-test-script', '--json',
+  ]));
+  assert.equal(result.code, 0);
+  const output = JSON.parse(result.value);
+  assert.equal(output.proposalId, 'verification-workflow.add-test-script');
+  assert.equal(output.outcome, 'applied');
+});
+
 test('help documents the deterministic alpha command surface', async () => {
   const result = await capture(process.stdout, () => runCli(['--help']));
   assert.equal(result.code, 0);
-  for (const command of ['init', 'doctor', 'agents', 'privacy', 'observe', 'patterns', 'index', 'recurrence', 'propose', 'evaluate', 'snapshot', 'status']) {
+  for (const command of ['init', 'doctor', 'agents', 'privacy', 'observe', 'patterns', 'index', 'recurrence', 'propose', 'evaluate', 'candidate', 'snapshot', 'status']) {
     assert.match(result.value, new RegExp(`rigx ${command}`));
   }
 });

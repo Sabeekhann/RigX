@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { runAgents } from './commands/agents.js';
+import { runCandidate } from './commands/candidate.js';
 import { runDoctor } from './commands/doctor.js';
 import { runEvaluate } from './commands/evaluate.js';
 import { runInit } from './commands/init.js';
@@ -14,7 +15,7 @@ import { runStatus } from './commands/status.js';
 
 const PACKAGE_VERSION = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8')).version;
 
-const HELP = `RIGX — local-first harness engineering for coding agents\n\nUsage:\n  rigx init [path] [--force]\n  rigx doctor [path] [--json]\n  rigx agents [--json] [--show-paths]\n  rigx privacy [path] [--json]\n  rigx observe --agent <claude-code|codex> [--input <file|->] [--json]\n  rigx patterns --agent <claude-code|codex> [--input <file|->] [--json]\n  rigx index [path] --agent <claude-code|codex> [--input <file|->] [--json]\n  rigx recurrence [path] [--json]\n  rigx propose [path] [--json]\n  rigx evaluate [path] --baseline <ref> --candidate <ref> [--json]\n  rigx snapshot [path] [--json]\n  rigx status [path] [--json]\n  rigx --help\n  rigx --version\n\nPrivacy:\n  Strict mode is the default. Core commands make no network requests.\n`;
+const HELP = `RIGX — local-first harness engineering for coding agents\n\nUsage:\n  rigx init [path] [--force]\n  rigx doctor [path] [--json]\n  rigx agents [--json] [--show-paths]\n  rigx privacy [path] [--json]\n  rigx observe --agent <claude-code|codex> [--input <file|->] [--json]\n  rigx patterns --agent <claude-code|codex> [--input <file|->] [--json]\n  rigx index [path] --agent <claude-code|codex> [--input <file|->] [--json]\n  rigx recurrence [path] [--json]\n  rigx propose [path] [--json]\n  rigx evaluate [path] --baseline <ref> --candidate <ref> [--json]\n  rigx candidate [path] --proposal <id> [--json]\n  rigx snapshot [path] [--json]\n  rigx status [path] [--json]\n  rigx --help\n  rigx --version\n\nPrivacy:\n  Strict mode is the default. Core commands make no network requests.\n`;
 
 function positional(args, fallback = '.') {
   return args.find((arg) => !arg.startsWith('-')) ?? fallback;
@@ -90,6 +91,12 @@ export async function runCli(argv) {
           candidate,
           args.includes('--json'),
         );
+        break;
+      }
+      case 'candidate': {
+        const proposalId = optionValue(args, '--proposal');
+        if (!proposalId) throw new Error('candidate requires --proposal <id>.');
+        output = await runCandidate(commandPath(args, ['--proposal']), proposalId, args.includes('--json'));
         break;
       }
       case 'snapshot': output = await runSnapshot(positional(args), args.includes('--json')); break;
