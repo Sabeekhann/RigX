@@ -26,10 +26,16 @@ test('version reports the same version declared in package.json', async () => {
   assert.equal(result.value.trim(), PACKAGE_VERSION);
 });
 
+test('evaluate requires both --baseline and --candidate', async () => {
+  const result = await capture(process.stderr, () => runCli(['evaluate', '.', '--baseline', 'main']));
+  assert.equal(result.code, 1);
+  assert.match(result.value, /--baseline.*--candidate/);
+});
+
 test('help documents the deterministic alpha command surface', async () => {
   const result = await capture(process.stdout, () => runCli(['--help']));
   assert.equal(result.code, 0);
-  for (const command of ['init', 'doctor', 'agents', 'privacy', 'observe', 'patterns', 'index', 'recurrence', 'propose', 'snapshot', 'status']) {
+  for (const command of ['init', 'doctor', 'agents', 'privacy', 'observe', 'patterns', 'index', 'recurrence', 'propose', 'evaluate', 'snapshot', 'status']) {
     assert.match(result.value, new RegExp(`rigx ${command}`));
   }
 });

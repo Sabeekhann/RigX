@@ -9,7 +9,7 @@ The current core CLI:
 - has zero runtime third-party dependencies;
 - contains no product telemetry;
 - requires no RIGX account;
-- makes no network requests in core commands;
+- makes no network requests of its own in core commands (the one exception, `rigx evaluate`, is documented below — it never makes network requests itself, but executes the repository's own scripts, which can);
 - does not upload repository content, prompts, responses, or agent sessions.
 
 The default configuration created by `rigx init` is `strict` mode.
@@ -43,6 +43,10 @@ The current `observe` command does **not** persist normalized events. `rigx patt
 `rigx index` is an explicit, repository-local persistence boundary. It requires an initialized strict metadata-only configuration and writes an ignored `.rigx/state/session-index.json` file. The index contains only opaque session identifiers, adapter-controlled agent identifiers, optional normalized timestamps, lifecycle presence, and bounded event/tool/category counts. It does not persist normalized event records, tool names, raw payloads, or any excluded content listed above. Dedicated regression tests place private markers in supplied payloads and verify they do not enter the index.
 
 `rigx recurrence` only reads that same index back; it does not read raw transcripts, does not add any new persisted fields, and does not make network requests. Its output (cross-session findings and a per-agent comparison) is built entirely from the bounded counts already described above.
+
+## Evaluation
+
+`rigx evaluate` is the one command that executes code rather than only inspecting or reading state. Given two Git refs, it checks each out into its own temporary worktree (never the caller's actual working directory) and runs that ref's own `test`/`lint`/`typecheck` scripts from `package.json` — nothing RigX invents, downloads, or fetches. Dependencies are not reinstalled (an existing `node_modules` is symlinked in, when present) specifically so `rigx evaluate` itself makes no network requests. A repository's own script can still make network requests, exactly as it would if a person ran that script directly — RigX does not sandbox or filter what the script itself does. Worktrees are always removed before the command returns, and `rigx evaluate` does not read or write `.rigx/` state, the session index, or any observation data. See [docs/evaluation.md](docs/evaluation.md).
 
 ## Harness snapshots
 
