@@ -49,14 +49,27 @@ test('propose command surfaces recovery-workflow proposals from indexed session 
   assert.ok(recoveryProposal);
 });
 
-test('propose command tolerates an unreadable or unsupported session index instead of failing', async () => {
+test('propose command surfaces a warning (not a silent failure) for an unsupported session index', async () => {
   const root = await tempRepo();
   await runInit(root);
   await mkdir(path.dirname(sessionIndexPath(root)), { recursive: true });
   await writeFile(sessionIndexPath(root), JSON.stringify({ schemaVersion: 99, sessions: [] }), 'utf8');
 
-  const output = await runPropose(root, false);
-  assert.match(output, /RIGX Proposals/);
+  const textOutput = await runPropose(root, false);
+  assert.match(textOutput, /RIGX Proposals/);
+  assert.match(textOutput, /WARNING: Could not read the session index/);
+
+  const jsonOutput = JSON.parse(await runPropose(root, true));
+  assert.match(jsonOutput.recurrenceWarning, /Could not read the session index/);
+});
+
+test('propose command reports no warning when no session index exists yet', async () => {
+  const root = await tempRepo();
+  await writeFile(path.join(root, 'AGENTS.md'), '# Rules\n\nPackage manager: npm\n', 'utf8');
+  await writeFile(path.join(root, 'CLAUDE.md'), '# Claude rules\n\nPackage manager: pnpm\n', 'utf8');
+
+  const jsonOutput = JSON.parse(await runPropose(root, true));
+  assert.equal(jsonOutput.recurrenceWarning, null);
 });
 
 test('propose command reports clearly when no proposals apply', async () => {
