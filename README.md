@@ -72,6 +72,8 @@ The current implementation is deliberately small and deterministic. It provides 
 - package verification commands
 - architecture/documentation signals
 - duplicated durable instructions where deterministic evidence exists
+- conflicting instructions across surfaces where the same declared key has different values
+- combined instruction-surface size, even when no single file is individually large
 - RIGX privacy initialization
 
 RIGX distinguishes **facts** from **recommendations** and avoids claims such as “stale” or “unused” unless it has evidence to support them.
@@ -220,10 +222,8 @@ isolated evaluation
 promote proven improvement or reject regression
 ```
 
-Current per-stream diagnostics already cover repeated failures, high tool repetition, search-heavy sessions, agent errors, retries, verification skips/failures, and incomplete tool activity — plus, via `rigx recurrence`, cross-session recurrence of those same patterns and a per-agent comparison. Planned capabilities include:
+Current per-stream diagnostics already cover repeated failures, high tool repetition, search-heavy sessions, agent errors, retries, verification skips/failures, high-volume no-change sessions, and incomplete tool activity — plus, via `rigx recurrence`, cross-session recurrence of those same patterns and a per-agent comparison. `rigx doctor` additionally detects instruction conflicts and combined-instruction-surface size as harness-waste signals. Planned capabilities include:
 
-- instruction conflict evidence where deterministically provable
-- context/harness waste signals
 - reviewable skill, hook, instruction, and documentation proposals
 - isolated worktree A/B evaluation
 - baseline-vs-candidate harness comparison

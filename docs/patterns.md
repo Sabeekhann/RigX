@@ -53,6 +53,10 @@ Fires when the last observed `verification`-category tool call in a session ende
 
 Fires when a session records at least one `filesystem`-category tool start (a file was changed) but ends with zero `verification`-category tool starts. This is deliberately low-confidence and informational: it says no verification command was *observed*, not that the agent skipped one — event coverage can be partial. See [recurrence.md](recurrence.md) for the cross-session version of this signal, which is stronger evidence when it recurs.
 
+### High tool volume, no changes
+
+Fires when a session records at least 20 tool starts but zero `filesystem`-category tool starts — a context/harness-waste signal: a lot of tool activity that never produced a file change. A single session can be legitimate investigation, so this is informational and low-confidence; see [recurrence.md](recurrence.md) for the cross-session version.
+
 ## Evidence contract
 
 Every finding contains:

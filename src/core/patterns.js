@@ -187,6 +187,18 @@ function analyzeSession(summary) {
     }));
   }
 
+  if (summary.toolStarts >= 20 && filesystemStarts === 0) {
+    findings.push(finding({
+      code: 'high-tool-volume-no-changes',
+      severity: 'info',
+      confidence: 'low',
+      session: summary.session,
+      title: 'A large number of tool calls produced no observed file change.',
+      evidence: { toolStarts: summary.toolStarts },
+      recommendation: 'High tool volume without a resulting change can be normal investigation, but if it recurs, check whether repository navigation or documentation is causing the agent to rediscover the same context.',
+    }));
+  }
+
   if (summary.sessionEnded && summary.toolStarts > summary.toolEnds) {
     findings.push(finding({
       code: 'unclosed-tool-activity',

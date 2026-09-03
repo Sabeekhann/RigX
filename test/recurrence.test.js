@@ -86,17 +86,37 @@ test('confidence scales with occurrence count and share', () => {
   assert.equal(high.findings.find((item) => item.code === 'recurring-tool-failures').confidence, 'high');
 });
 
+test('analyzeRecurrence reports recurring high tool volume without file changes', () => {
+  const sessions = ['s1', 's2', 's3'].map((session) => sessionFixture({ session, toolStarts: 25 }));
+  const result = analyzeRecurrence(sessions);
+  const finding = result.findings.find((item) => item.code === 'recurring-high-tool-volume-sessions');
+  assert.ok(finding);
+  assert.equal(finding.severity, 'info');
+});
+
+test('analyzeRecurrence does not report high tool volume recurrence when files were changed', () => {
+  const sessions = ['s1', 's2', 's3'].map((session) => sessionFixture({
+    session,
+    toolStarts: 25,
+    categories: { filesystem: 1 },
+  }));
+  const result = analyzeRecurrence(sessions);
+  assert.ok(!result.findings.some((item) => item.code === 'recurring-high-tool-volume-sessions'));
+});
+
 test('compareAgents partitions sessions by agent and computes per-agent rates', () => {
   const sessions = [
     sessionFixture({ agent: 'claude-code', session: 'c1', toolFailures: 1 }),
     sessionFixture({ agent: 'claude-code', session: 'c2' }),
     sessionFixture({ agent: 'codex', session: 'x1', categories: { filesystem: 1 } }),
+    sessionFixture({ agent: 'codex', session: 'x2', toolStarts: 25 }),
   ];
   const result = compareAgents(sessions);
   assert.equal(result.agents['claude-code'].sessions, 2);
   assert.equal(result.agents['claude-code'].toolFailureRate, 0.5);
-  assert.equal(result.agents.codex.sessions, 1);
-  assert.equal(result.agents.codex.verificationSkipRate, 1);
+  assert.equal(result.agents.codex.sessions, 2);
+  assert.equal(result.agents.codex.verificationSkipRate, 0.5);
+  assert.equal(result.agents.codex.highToolVolumeNoChangeRate, 0.5);
 });
 
 test('compareAgents returns an empty object for no sessions', () => {

@@ -195,6 +195,47 @@ async function duplicateInstructionEvidence(root, files) {
     });
 }
 
+const KEY_VALUE_LINE = /^[-*]?\s*([A-Za-z][A-Za-z0-9 /_-]{2,40}):\s*(.+?)\s*$/;
+
+function normalizeKey(key) {
+  return key.trim().replace(/\s+/g, ' ').toLowerCase();
+}
+
+function normalizeValue(value) {
+  return value.trim().replace(/\s+/g, ' ').toLowerCase().replace(/[.`'"]+$/, '');
+}
+
+// Deliberately syntactic: two files stating the same "key: value" line with a
+// different value is a provable, deterministic conflict. This does not
+// attempt semantic contradiction detection (e.g. free-form prose disagreeing).
+async function detectInstructionConflicts(root, files) {
+  const keyToEntries = new Map();
+
+  for (const file of files) {
+    const text = await readTextIfExists(path.join(root, file.path));
+    if (!text) continue;
+    for (const raw of text.split(/\r?\n/)) {
+      const match = KEY_VALUE_LINE.exec(raw.trim());
+      if (!match) continue;
+      const key = normalizeKey(match[1]);
+      const value = normalizeValue(match[2]);
+      if (!value) continue;
+      if (!keyToEntries.has(key)) keyToEntries.set(key, new Map());
+      keyToEntries.get(key).set(file.path, value);
+    }
+  }
+
+  const conflicts = [];
+  for (const [key, byFile] of keyToEntries.entries()) {
+    const distinctValues = new Set(byFile.values());
+    if (byFile.size < 2 || distinctValues.size < 2) continue;
+    const detail = [...byFile.entries()].map(([file, value]) => `${file}: “${value}”`).join(' vs. ');
+    conflicts.push(`${key}: ${detail}`);
+  }
+
+  return conflicts.slice(0, 5);
+}
+
 export async function analyzeRepository(inventory) {
   const findings = [];
   const root = inventory.root;
@@ -234,6 +275,35 @@ export async function analyzeRepository(inventory) {
       Math.min(10, 2 + duplicates.length * 2),
       'warning',
       'medium',
+    ));
+  }
+
+  const conflicts = await detectInstructionConflicts(root, inventory.instructionFiles);
+  if (conflicts.length > 0) {
+    findings.push(finding(
+      'instructions.conflicts',
+      'instructions',
+      'Different agent surfaces declare different values for the same key',
+      conflicts,
+      'Reconcile the conflicting values into one canonical source; contradictory instructions across surfaces force an agent to guess which one applies.',
+      Math.min(10, 4 + conflicts.length * 3),
+      'warning',
+      'medium',
+    ));
+  }
+
+  const totalInstructionLines = inventory.instructionFiles.reduce((sum, file) => sum + file.lines, 0);
+  const hasOversizedFile = inventory.instructionFiles.some((file) => file.lines >= 500);
+  if (inventory.instructionFiles.length >= 2 && totalInstructionLines >= 600 && !hasOversizedFile) {
+    findings.push(finding(
+      'instructions.combined-size',
+      'instructions',
+      'Combined instruction surface is large even though no single file is',
+      [`${inventory.instructionFiles.length} instruction files totalling ${totalInstructionLines} lines: ${inventory.instructionFiles.map((file) => `${file.path} (${file.lines})`).join(', ')}.`],
+      'A large combined instruction surface is still context an agent must load; consolidate overlapping guidance or link to task-specific documentation instead of repeating it per-surface.',
+      6,
+      'warning',
+      'high',
     ));
   }
 

@@ -31,9 +31,13 @@ Fires when at least 3 indexed sessions each recorded at least one tool failure.
 
 Fires when at least 3 indexed sessions each recorded a `filesystem`-category tool start with zero `verification`-category tool starts — the cross-session counterpart to `rigx patterns`'s single-session `verification-skipped` finding, and stronger evidence because it recurs.
 
+### Recurring high tool volume, no changes
+
+Fires when at least 3 indexed sessions each recorded 20+ tool starts with zero `filesystem`-category tool starts — the cross-session counterpart to `rigx patterns`'s single-session `high-tool-volume-no-changes` finding, and a context/harness-waste signal: repeated high-effort sessions that produce no file change.
+
 ## Per-agent comparison
 
-Alongside findings, `rigx recurrence` reports, per agent (`claude-code`/`codex`), the share of that agent's indexed sessions that were search-heavy, had a tool failure, or skipped verification — so the same signals can be compared across agents rather than only in aggregate.
+Alongside findings, `rigx recurrence` reports, per agent (`claude-code`/`codex`), the share of that agent's indexed sessions that were search-heavy, had a tool failure, skipped verification, or showed high tool volume with no changes — so the same signals can be compared across agents rather than only in aggregate.
 
 ## Evidence and confidence contract
 

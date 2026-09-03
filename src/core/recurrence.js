@@ -29,6 +29,10 @@ function skipsVerification(session) {
   return categoryCount(session, 'filesystem') > 0 && categoryCount(session, 'verification') === 0;
 }
 
+function isHighVolumeWithoutChanges(session) {
+  return (session.counts?.toolStarts ?? 0) >= 20 && categoryCount(session, 'filesystem') === 0;
+}
+
 function finding({ code, severity, occurrences, title, evidence, recommendation }) {
   return {
     code,
@@ -81,6 +85,18 @@ export function analyzeRecurrence(sessions = []) {
     }));
   }
 
+  const highVolumeCount = sessions.filter(isHighVolumeWithoutChanges).length;
+  if (highVolumeCount >= RECURRENCE_THRESHOLD) {
+    findings.push(finding({
+      code: 'recurring-high-tool-volume-sessions',
+      severity: 'info',
+      occurrences: highVolumeCount,
+      title: 'Sessions with high tool volume but no file changes recur.',
+      evidence: { sessions: totalSessions, occurrences: highVolumeCount, share: Number((highVolumeCount / totalSessions).toFixed(2)) },
+      recommendation: 'Recurring high-volume, no-change sessions are stronger evidence of context or navigation waste than a single occurrence; consider improving repository navigation documentation or deterministic tooling.',
+    }));
+  }
+
   return {
     schemaVersion: RECURRENCE_SCHEMA_VERSION,
     analyzedSessions: totalSessions,
@@ -102,12 +118,14 @@ export function compareAgents(sessions = []) {
     const searchHeavy = agentSessions.filter(isSearchHeavy).length;
     const withFailures = agentSessions.filter(hasToolFailure).length;
     const verificationSkips = agentSessions.filter(skipsVerification).length;
+    const highVolumeNoChanges = agentSessions.filter(isHighVolumeWithoutChanges).length;
 
     agents[agent] = {
       sessions: total,
       searchHeavyRate: total === 0 ? 0 : Number((searchHeavy / total).toFixed(2)),
       toolFailureRate: total === 0 ? 0 : Number((withFailures / total).toFixed(2)),
       verificationSkipRate: total === 0 ? 0 : Number((verificationSkips / total).toFixed(2)),
+      highToolVolumeNoChangeRate: total === 0 ? 0 : Number((highVolumeNoChanges / total).toFixed(2)),
     };
   }
 
