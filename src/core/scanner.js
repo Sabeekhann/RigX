@@ -376,6 +376,18 @@ export async function analyzeRepository(inventory) {
     ));
   }
 
+  if (inventory.mcpSurfaces.length === 0) {
+    findings.push(finding(
+      'tooling.no-mcp-config',
+      'tooling',
+      'No MCP configuration detected',
+      ['No .mcp.json, .vscode/mcp.json, or .github/copilot/mcp.json was found in the repository.'],
+      'Add MCP server configuration only when agents need deterministic, auditable access to an external tool or service beyond the local filesystem/shell.',
+      0,
+      'info',
+    ));
+  }
+
   if (!(await exists(path.join(root, '.rigx/config.json')))) {
     findings.push(finding(
       'privacy.uninitialized',

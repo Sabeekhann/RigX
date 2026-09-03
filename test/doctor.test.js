@@ -65,6 +65,24 @@ test('doctor reports combined instruction size waste when no single file is larg
   assert.ok(!report.findings.some((item) => item.id.startsWith('instructions.large')));
 });
 
+test('doctor reports no MCP configuration as an informational finding', async () => {
+  const root = await tempRepo();
+  await writeFile(path.join(root, 'package.json'), JSON.stringify({ scripts: { build: 'tsc' } }), 'utf8');
+  const report = JSON.parse(await runDoctor(root, true));
+  const finding = report.findings.find((item) => item.id === 'tooling.no-mcp-config');
+  assert.ok(finding);
+  assert.equal(finding.severity, 'info');
+  assert.equal(finding.deduction, 0);
+});
+
+test('doctor does not report missing MCP configuration when one is present', async () => {
+  const root = await tempRepo();
+  await writeFile(path.join(root, 'package.json'), JSON.stringify({ scripts: { build: 'tsc' } }), 'utf8');
+  await writeFile(path.join(root, '.mcp.json'), '{}\n', 'utf8');
+  const report = JSON.parse(await runDoctor(root, true));
+  assert.ok(!report.findings.some((item) => item.id === 'tooling.no-mcp-config'));
+});
+
 test('every doctor finding carries a confidence field', async () => {
   const root = await tempRepo();
   await writeFile(path.join(root, 'package.json'), JSON.stringify({ scripts: { build: 'tsc' } }), 'utf8');

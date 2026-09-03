@@ -9,7 +9,7 @@ rigx propose .
 rigx propose . --json
 ```
 
-`rigx propose` runs the same repository scan as `rigx doctor` and maps a subset of its findings to proposals. If no mapped finding fired, it says so rather than inventing a suggestion.
+`rigx propose` runs the same repository scan as `rigx doctor`, and also reads back the local session index (`.rigx/state/session-index.json`, the same data `rigx recurrence` reads) if one exists, to generate proposals from recurring cross-session signals. If no mapped finding fired, it says so rather than inventing a suggestion. An indexed session history is optional — `rigx propose` works from repository state alone if `rigx index` has never been run; the recurrence-derived categories below simply produce no proposals in that case.
 
 ## Current proposal categories
 
@@ -28,9 +28,21 @@ rigx propose . --json
 
 - **Thin documentation signals** (`legibility.docs-thin`): proposes a minimal `docs/architecture.md` outline (overview, key directories, how to verify a change) as a starting skeleton — RIGX cannot generate the actual architecture description, only the scaffold.
 
-## Deferred categories
+### Deterministic hooks
 
-Task-specific skills, deterministic hooks, tool/MCP configuration changes, and recovery workflows are on the roadmap but not yet implemented — they need richer, more judgment-dependent generation (actual skill/hook content) than the current mechanical finding-to-suggestion mapping, and are being sequenced separately.
+- **No hook surface, but a verification script exists** (`tooling.no-hooks` + a `test`/`lint`/`typecheck` script present): proposes a `.claude/settings.json` `PostToolUse` hook that runs the verification command after `Write`/`Edit` tool use, using the repository's detected package manager's run syntax. Only fires when there is something concrete to run — the mere absence of hooks is not itself proposed against (see "Deferred" below).
+
+### Task-specific skills
+
+- **Recurring search-heavy sessions** (`recurring-search-heavy-sessions`, from `rigx recurrence`'s indexed session history): proposes a focused repository-navigation skill or deterministic lookup script, since the same rediscovery cost showing up across multiple sessions is stronger evidence than a single search-heavy session.
+
+### Recovery workflows
+
+- **Recurring tool failures** (`recurring-tool-failures`, from `rigx recurrence`'s indexed session history): proposes adding short "when a command fails" guidance to instructions — stop after one retry, inspect the actual error, address the likely cause before retrying again.
+
+## Deferred category
+
+**Tool/MCP configuration changes** is not yet mapped to a proposal. The absence of MCP configuration (`tooling.no-mcp-config` in `rigx doctor`) is not itself evidence of a problem — most repositories have no need for one — so proposing it unconditionally would be noise, the same reason `skills.none` has no proposal mapping either. A useful proposal here needs a real signal for *which* external tool would help, which RIGX cannot determine deterministically from repository state or session counts alone.
 
 ## Proposal shape
 
@@ -51,4 +63,4 @@ Every proposal is:
 
 ## Privacy
 
-`rigx propose` reads the same repository surfaces `rigx doctor` already reads (instruction files, `package.json`, lint/CI config presence) to tailor its suggestions. It does not persist anything, does not make network requests, and does not read session/observation data.
+`rigx propose` reads the same repository surfaces `rigx doctor` already reads (instruction files, `package.json`, lint/CI config presence) to tailor its suggestions, plus the same already-privacy-filtered session index `rigx recurrence` reads (opaque session identifiers and bounded counts only — see [observation-schema.md](observation-schema.md)). It does not persist anything, does not make network requests, and never reads raw session/observation content.

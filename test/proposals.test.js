@@ -245,6 +245,94 @@ test('generateProposals tolerates a malformed package.json when detecting tools'
   assert.match(lintProposal.suggestion, /eslint \./);
 });
 
+test('generateProposals proposes a verification hook when no hooks exist but a verification script does', async () => {
+  const root = await tempRepo();
+  await writeFile(path.join(root, 'package.json'), JSON.stringify({ scripts: { test: 'node --test' } }), 'utf8');
+
+  const inventory = await inventoryRepository(root);
+  const findings = await analyzeRepository(inventory);
+  const result = await generateProposals(root, inventory, findings);
+
+  const hookProposal = result.proposals.find((item) => item.id === 'deterministic-hooks.verify-after-edit');
+  assert.ok(hookProposal);
+  assert.equal(hookProposal.category, 'deterministic-hooks');
+  assert.match(hookProposal.suggestion, /PostToolUse/);
+  assert.match(hookProposal.suggestion, /npm test/);
+});
+
+test('generateProposals does not propose a verification hook when no verification script exists', async () => {
+  const root = await tempRepo();
+  await writeFile(path.join(root, 'package.json'), JSON.stringify({ scripts: {} }), 'utf8');
+
+  const inventory = await inventoryRepository(root);
+  const findings = await analyzeRepository(inventory);
+  const result = await generateProposals(root, inventory, findings);
+
+  assert.ok(!result.proposals.some((item) => item.id === 'deterministic-hooks.verify-after-edit'));
+});
+
+test('generateProposals does not propose a tool/MCP configuration change for the mere absence of MCP config', async () => {
+  const root = await tempRepo();
+  await writeFile(path.join(root, 'package.json'), JSON.stringify({ scripts: { test: 'node --test' } }), 'utf8');
+
+  const inventory = await inventoryRepository(root);
+  const findings = await analyzeRepository(inventory);
+  const result = await generateProposals(root, inventory, findings);
+
+  assert.ok(!result.proposals.some((item) => item.category === 'tool-mcp-configuration'));
+});
+
+test('generateProposals proposes a navigation skill from recurring search-heavy sessions', async () => {
+  const root = await tempRepo();
+  const inventory = await inventoryRepository(root);
+  const findings = await analyzeRepository(inventory);
+  const recurrenceFindings = [{
+    code: 'recurring-search-heavy-sessions',
+    severity: 'info',
+    confidence: 'medium',
+    scope: 'cross-session',
+    title: 'Search-heavy sessions recur across multiple indexed sessions.',
+    evidence: { sessions: 5, occurrences: 5, share: 1 },
+    recommendation: 'x',
+  }];
+
+  const result = await generateProposals(root, inventory, findings, recurrenceFindings);
+  const skillProposal = result.proposals.find((item) => item.id === 'task-specific-skills.add-navigation-skill');
+  assert.ok(skillProposal);
+  assert.equal(skillProposal.category, 'task-specific-skills');
+  assert.deepEqual(skillProposal.findingIds, ['recurring-search-heavy-sessions']);
+});
+
+test('generateProposals proposes recovery guidance from recurring tool failures', async () => {
+  const root = await tempRepo();
+  const inventory = await inventoryRepository(root);
+  const findings = await analyzeRepository(inventory);
+  const recurrenceFindings = [{
+    code: 'recurring-tool-failures',
+    severity: 'warning',
+    confidence: 'medium',
+    scope: 'cross-session',
+    title: 'Tool failures recur across multiple indexed sessions.',
+    evidence: { sessions: 5, occurrences: 5, share: 1 },
+    recommendation: 'x',
+  }];
+
+  const result = await generateProposals(root, inventory, findings, recurrenceFindings);
+  const recoveryProposal = result.proposals.find((item) => item.id === 'recovery-workflows.add-failure-guidance');
+  assert.ok(recoveryProposal);
+  assert.equal(recoveryProposal.category, 'recovery-workflows');
+});
+
+test('generateProposals does not propose skill/recovery-workflow proposals without recurrence findings', async () => {
+  const root = await tempRepo();
+  const inventory = await inventoryRepository(root);
+  const findings = await analyzeRepository(inventory);
+
+  const result = await generateProposals(root, inventory, findings);
+  assert.ok(!result.proposals.some((item) => item.category === 'task-specific-skills'));
+  assert.ok(!result.proposals.some((item) => item.category === 'recovery-workflows'));
+});
+
 test('every proposal references the finding id(s) it is based on', async () => {
   const root = await tempRepo();
   await writeFile(path.join(root, 'AGENTS.md'), '# Rules\n\nPackage manager: npm\n', 'utf8');

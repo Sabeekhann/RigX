@@ -4,6 +4,20 @@ All notable user-facing changes to RIGX will be documented here.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) principles. RIGX is pre-1.0, so command output and schemas can still change between alpha releases.
 
+## [0.1.0-alpha.6] - 2026-09-03
+
+### Added
+
+- `rigx propose` now also reads the local session index (when `rigx index` has been run) and generates proposals from `rigx recurrence`'s cross-session findings, closing out three more Phase 3 categories:
+  - Deterministic hooks: a `.claude/settings.json` `PostToolUse` hook suggestion that runs verification after file edits, when a verification script exists but no hook surface does.
+  - Task-specific skills: a focused navigation-skill suggestion when search-heavy sessions recur.
+  - Recovery workflows: a "when a command fails" instruction-guidance suggestion when tool failures recur.
+- `rigx doctor` finding `tooling.no-mcp-config` (informational, mirrors `tooling.no-hooks`/`skills.none`): reports when no MCP configuration surface is detected.
+
+### Changed
+
+- `ROADMAP.md`'s Phase 3 now has 6 of 7 categories checked off. Tool/MCP configuration changes remains explicitly deferred: the mere absence of MCP config isn't evidence of a problem (same reasoning as `skills.none`), and a useful proposal needs a signal for *which* external tool would help that RIGX cannot determine deterministically.
+
 ## [0.1.0-alpha.5] - 2026-09-03
 
 ### Added

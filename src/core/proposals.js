@@ -211,13 +211,92 @@ function repositoryNavigationProposals(findingsById) {
   return proposals;
 }
 
-export async function generateProposals(root, inventory, findings = []) {
+function deterministicHookProposals(findingsById, inventory) {
+  const proposals = [];
+
+  const noHooks = findingsById.get('tooling.no-hooks');
+  const scripts = new Set(inventory.packageScripts);
+  const verificationScript = ['test', 'lint', 'typecheck'].find((label) => scripts.has(label));
+  if (noHooks && verificationScript) {
+    const command = runCommand(inventory.packageManager, verificationScript, verificationScript === 'test' ? 'test' : undefined);
+    proposals.push(proposal({
+      id: 'deterministic-hooks.verify-after-edit',
+      category: 'deterministic-hooks',
+      title: 'Add a hook that runs verification automatically after file edits',
+      rationale: noHooks.title,
+      findingIds: [noHooks.id],
+      suggestion: [
+        'Suggested .claude/settings.json hook (adjust the matcher/command to your workflow):',
+        '',
+        JSON.stringify({
+          hooks: {
+            PostToolUse: [
+              { matcher: 'Write|Edit', hooks: [{ type: 'command', command }] },
+            ],
+          },
+        }, null, 2),
+      ].join('\n'),
+    }));
+  }
+
+  return proposals;
+}
+
+// Note: tool/MCP configuration changes are not yet mapped to a proposal.
+// The absence of MCP config (tooling.no-mcp-config in scanner.js) is not
+// itself evidence of a problem -- most repositories have no need for one --
+// so proposing it unconditionally would be noise, the same reason
+// scanner.js's skills.none finding has no proposal mapping either. A useful
+// proposal here needs a real signal for *which* external tool would help,
+// which RIGX cannot determine deterministically; see docs/proposals.md.
+
+function taskSkillProposals(recurrenceFindingsById) {
+  const proposals = [];
+
+  const searchHeavy = recurrenceFindingsById.get('recurring-search-heavy-sessions');
+  if (searchHeavy) {
+    proposals.push(proposal({
+      id: 'task-specific-skills.add-navigation-skill',
+      category: 'task-specific-skills',
+      title: 'Consider a focused repository-navigation skill',
+      rationale: searchHeavy.title,
+      findingIds: ['recurring-search-heavy-sessions'],
+      suggestion: 'Search-heavy sessions recur across your indexed history (see `rigx recurrence`). Consider a skill or deterministic lookup script that documents where key subsystems live, so agents stop rediscovering the same structure by searching each time.',
+    }));
+  }
+
+  return proposals;
+}
+
+function recoveryWorkflowProposals(recurrenceFindingsById) {
+  const proposals = [];
+
+  const recurringFailures = recurrenceFindingsById.get('recurring-tool-failures');
+  if (recurringFailures) {
+    proposals.push(proposal({
+      id: 'recovery-workflows.add-failure-guidance',
+      category: 'recovery-workflows',
+      title: 'Add recovery guidance for repeated tool failures',
+      rationale: recurringFailures.title,
+      findingIds: ['recurring-tool-failures'],
+      suggestion: 'Tool failures recur across your indexed sessions (see `rigx recurrence`). Consider adding a short "when a command fails" section to your instructions: stop after one retry, inspect the actual error output, and only retry after addressing the likely cause (permissions, missing dependency, wrong working directory) rather than repeating the same command.',
+    }));
+  }
+
+  return proposals;
+}
+
+export async function generateProposals(root, inventory, findings = [], recurrenceFindings = []) {
   const findingsById = new Map(findings.map((item) => [item.id, item]));
+  const recurrenceFindingsById = new Map(recurrenceFindings.map((item) => [item.code, item]));
 
   const proposals = [
     ...await verificationProposals(root, inventory, findingsById),
     ...instructionRestructuringProposals(findingsById),
     ...repositoryNavigationProposals(findingsById),
+    ...deterministicHookProposals(findingsById, inventory),
+    ...taskSkillProposals(recurrenceFindingsById),
+    ...recoveryWorkflowProposals(recurrenceFindingsById),
   ];
 
   return {
