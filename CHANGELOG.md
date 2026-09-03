@@ -4,6 +4,20 @@ All notable user-facing changes to RIGX will be documented here.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) principles. RIGX is pre-1.0, so command output and schemas can still change between alpha releases.
 
+## [0.1.0-alpha.5] - 2026-09-03
+
+### Added
+
+- `rigx propose`: the first Phase 3 command. Maps a subset of `rigx doctor` findings into concrete, reviewable proposals — never applied automatically.
+  - Verification workflows: a tailored `package.json` script suggestion for missing test/lint/typecheck (detecting ESLint/Biome and Vitest/Jest/Mocha/Ava where possible, falling back to `node --test`), and a minimal GitHub Actions CI workflow suggestion using the detected package manager.
+  - Instruction restructuring: consolidation suggestions for duplicated instruction text, conflicting instruction values, and large combined instruction surfaces.
+  - Repository navigation: a minimal `docs/architecture.md` outline suggestion when documentation signals are thin.
+- `docs/proposals.md` documenting the proposal shape, current categories, and what's deferred.
+
+### Changed
+
+- `ROADMAP.md`'s Phase 3 is now in progress: instruction restructuring, verification workflows, and repository navigation docs are checked off; task-specific skills, deterministic hooks, tool/MCP configuration changes, and recovery workflows remain open.
+
 ## [0.1.0-alpha.4] - 2026-09-02
 
 ### Added
