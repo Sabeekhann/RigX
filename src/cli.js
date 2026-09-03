@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { runAgents } from './commands/agents.js';
 import { runDoctor } from './commands/doctor.js';
+import { runEvaluate } from './commands/evaluate.js';
 import { runInit } from './commands/init.js';
 import { runIndex } from './commands/index.js';
 import { runObserve } from './commands/observe.js';
@@ -13,7 +14,7 @@ import { runStatus } from './commands/status.js';
 
 const PACKAGE_VERSION = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8')).version;
 
-const HELP = `RIGX — local-first harness engineering for coding agents\n\nUsage:\n  rigx init [path] [--force]\n  rigx doctor [path] [--json]\n  rigx agents [--json] [--show-paths]\n  rigx privacy [path] [--json]\n  rigx observe --agent <claude-code|codex> [--input <file|->] [--json]\n  rigx patterns --agent <claude-code|codex> [--input <file|->] [--json]\n  rigx index [path] --agent <claude-code|codex> [--input <file|->] [--json]\n  rigx recurrence [path] [--json]\n  rigx propose [path] [--json]\n  rigx snapshot [path] [--json]\n  rigx status [path] [--json]\n  rigx --help\n  rigx --version\n\nPrivacy:\n  Strict mode is the default. Core commands make no network requests.\n`;
+const HELP = `RIGX — local-first harness engineering for coding agents\n\nUsage:\n  rigx init [path] [--force]\n  rigx doctor [path] [--json]\n  rigx agents [--json] [--show-paths]\n  rigx privacy [path] [--json]\n  rigx observe --agent <claude-code|codex> [--input <file|->] [--json]\n  rigx patterns --agent <claude-code|codex> [--input <file|->] [--json]\n  rigx index [path] --agent <claude-code|codex> [--input <file|->] [--json]\n  rigx recurrence [path] [--json]\n  rigx propose [path] [--json]\n  rigx evaluate [path] --baseline <ref> --candidate <ref> [--json]\n  rigx snapshot [path] [--json]\n  rigx status [path] [--json]\n  rigx --help\n  rigx --version\n\nPrivacy:\n  Strict mode is the default. Core commands make no network requests.\n`;
 
 function positional(args, fallback = '.') {
   return args.find((arg) => !arg.startsWith('-')) ?? fallback;
@@ -24,9 +25,9 @@ function optionValue(args, name, fallback) {
   return index >= 0 ? args[index + 1] : fallback;
 }
 
-function commandPath(args) {
+function commandPath(args, flagNames = ['--agent', '--input']) {
   const consumed = new Set();
-  for (const name of ['--agent', '--input']) {
+  for (const name of flagNames) {
     const index = args.indexOf(name);
     if (index >= 0) consumed.add(index + 1);
   }
@@ -79,6 +80,18 @@ export async function runCli(argv) {
       }); break;
       case 'recurrence': output = await runRecurrence(positional(args), args.includes('--json')); break;
       case 'propose': output = await runPropose(positional(args), args.includes('--json')); break;
+      case 'evaluate': {
+        const baseline = optionValue(args, '--baseline');
+        const candidate = optionValue(args, '--candidate');
+        if (!baseline || !candidate) throw new Error('evaluate requires --baseline <ref> and --candidate <ref>.');
+        output = await runEvaluate(
+          commandPath(args, ['--baseline', '--candidate']),
+          baseline,
+          candidate,
+          args.includes('--json'),
+        );
+        break;
+      }
       case 'snapshot': output = await runSnapshot(positional(args), args.includes('--json')); break;
       case 'status': output = await runStatus(positional(args), args.includes('--json')); break;
       default:

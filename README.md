@@ -60,6 +60,7 @@ The current implementation is deliberately small and deterministic. It provides 
 | `rigx index [path] --agent <claude-code|codex>` | Writes explicit, strict-mode-only session summaries to a repository-local, git-ignored index. |
 | `rigx recurrence [path]` | Detects cross-session recurrence of failure, search-heavy, and verification-skip patterns from the indexed sessions, plus a per-agent comparison. |
 | `rigx propose [path]` | Turns a subset of `rigx doctor`/`rigx recurrence` findings into concrete, reviewable proposals (verification workflows, instruction restructuring, navigation docs, deterministic hooks, task-specific skills, recovery workflows). Never applies anything automatically. |
+| `rigx evaluate [path] --baseline <ref> --candidate <ref>` | Runs the repository's own test/lint/typecheck scripts in isolated Git worktrees for both refs and reports pass/fail, duration, and regressions. |
 | `rigx snapshot [path]` | Creates a content-free SHA-256 baseline of harness surfaces. |
 | `rigx status [path]` | Reports harness drift against the baseline. |
 
@@ -157,7 +158,7 @@ In strict mode RIGX does not persist:
 - terminal output
 - full paths from observed agent sessions
 
-The current core CLI contains no product telemetry and makes no network requests. Agent detection checks filesystem metadata only. Harness snapshots store relative harness file names, byte counts, and SHA-256 hashes — **not file contents**.
+The current core CLI contains no product telemetry and makes no network requests of its own. Agent detection checks filesystem metadata only. Harness snapshots store relative harness file names, byte counts, and SHA-256 hashes — **not file contents**. The one exception is `rigx evaluate`, which executes the repository's own test/lint/typecheck scripts (see [docs/evaluation.md](docs/evaluation.md)); RigX itself makes no network calls there either, but a repository's own script can, exactly as it would if you ran that script yourself.
 
 ```text
 NO ACCOUNT REQUIRED
@@ -223,11 +224,10 @@ isolated evaluation
 promote proven improvement or reject regression
 ```
 
-Current per-stream diagnostics already cover repeated failures, high tool repetition, search-heavy sessions, agent errors, retries, verification skips/failures, high-volume no-change sessions, and incomplete tool activity — plus, via `rigx recurrence`, cross-session recurrence of those same patterns and a per-agent comparison. `rigx doctor` additionally detects instruction conflicts and combined-instruction-surface size as harness-waste signals. `rigx propose` turns a subset of those findings (verification workflows, instruction restructuring, navigation docs, deterministic hooks, task-specific skills, recovery workflows) into reviewable suggestions — see [docs/proposals.md](docs/proposals.md). Planned capabilities include:
+Current per-stream diagnostics already cover repeated failures, high tool repetition, search-heavy sessions, agent errors, retries, verification skips/failures, high-volume no-change sessions, and incomplete tool activity — plus, via `rigx recurrence`, cross-session recurrence of those same patterns and a per-agent comparison. `rigx doctor` additionally detects instruction conflicts and combined-instruction-surface size as harness-waste signals. `rigx propose` turns a subset of those findings (verification workflows, instruction restructuring, navigation docs, deterministic hooks, task-specific skills, recovery workflows) into reviewable suggestions — see [docs/proposals.md](docs/proposals.md). `rigx evaluate` compares two Git refs' own test/lint/typecheck scripts in isolated worktrees and reports regressions — see [docs/evaluation.md](docs/evaluation.md). Planned capabilities include:
 
 - reviewable tool/MCP configuration proposals
-- isolated worktree A/B evaluation
-- baseline-vs-candidate harness comparison
+- repeated agent-trial comparison (task success, token/context usage, retry/tool-call/duration) once RigX can invoke a coding agent itself
 - user-approved harness evolution
 
 See [ROADMAP.md](ROADMAP.md) for the staged plan.

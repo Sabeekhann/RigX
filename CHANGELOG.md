@@ -4,6 +4,19 @@ All notable user-facing changes to RIGX will be documented here.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) principles. RIGX is pre-1.0, so command output and schemas can still change between alpha releases.
 
+## [0.1.0-alpha.7] - 2026-09-03
+
+### Added
+
+- `rigx evaluate`, the first Phase 4 command: given `--baseline <ref>` and `--candidate <ref>`, checks each out into an isolated Git worktree (never the caller's working directory, safe even when the candidate is the currently checked-out branch), runs that ref's own `test`/`lint`/`typecheck` scripts, and reports pass/fail, duration, and any success-to-failure regression.
+- `docs/evaluation.md` documenting how it works, its regression definition, and what's explicitly out of scope (repeated agent-trial comparison, which needs RigX to invoke an agent itself — it doesn't yet).
+- Tests covering regression detection, pre-existing-failure handling, the currently-checked-out-branch edge case, missing verification scripts, and worktree cleanup (including that the caller's branch/working directory is left untouched).
+
+### Changed
+
+- `ROADMAP.md`'s Phase 4 now has 4 of 7 items checked off (isolated worktree runner, baseline/candidate trials, deterministic checks, regression detection); the remaining three require actually invoking a coding agent across repeated trials, which is future work.
+- Clarified in `README.md`/`PRIVACY.md` that `rigx evaluate` is the one command that executes code (the repository's own scripts) rather than only inspecting state; RigX itself still makes no network requests, but a repository's own script can, same as if a person ran it directly.
+
 ## [0.1.0-alpha.6] - 2026-09-03
 
 ### Added

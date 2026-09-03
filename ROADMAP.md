@@ -48,16 +48,18 @@ Generate reviewable proposals for:
 
 No automatic application by default.
 
-## Phase 4 — evaluation
+## Phase 4 — evaluation 🚧 in progress
 
-- isolated Git worktree runner
-- baseline vs candidate harness trials
-- deterministic repository checks
-- repeated trials for nondeterministic agents
-- task success comparison
-- token/context comparison where available
-- retry, tool-call, and duration comparison
-- regression detection
+- [x] isolated Git worktree runner
+- [x] baseline vs candidate harness trials
+- [x] deterministic repository checks
+- [ ] repeated trials for nondeterministic agents
+- [ ] task success comparison
+- [ ] token/context comparison where available
+- [ ] retry, tool-call, and duration comparison
+- [x] regression detection
+
+The four unchecked items require RigX to actually invoke a coding agent across repeated trials, which it does not do yet — RigX observes and analyzes agent activity, it does not run agents itself. `rigx evaluate` currently compares two Git refs' own deterministic verification scripts (test/lint/typecheck), not agent task outcomes.
 
 ## Phase 5 — harness evolution
 
