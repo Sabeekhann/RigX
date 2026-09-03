@@ -29,7 +29,7 @@ test('version reports the same version declared in package.json', async () => {
 test('help documents the deterministic alpha command surface', async () => {
   const result = await capture(process.stdout, () => runCli(['--help']));
   assert.equal(result.code, 0);
-  for (const command of ['init', 'doctor', 'agents', 'privacy', 'observe', 'patterns', 'index', 'recurrence', 'snapshot', 'status']) {
+  for (const command of ['init', 'doctor', 'agents', 'privacy', 'observe', 'patterns', 'index', 'recurrence', 'propose', 'snapshot', 'status']) {
     assert.match(result.value, new RegExp(`rigx ${command}`));
   }
 });

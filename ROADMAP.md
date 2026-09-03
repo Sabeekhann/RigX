@@ -34,17 +34,17 @@ RIGX is being built from deterministic foundations outward. Dates are intentiona
 - [x] recommendation confidence and evidence
 - [x] per-agent pattern comparison
 
-## Phase 3 — harness proposals
+## Phase 3 — harness proposals 🚧 in progress
 
 Generate reviewable proposals for:
 
-- instruction restructuring
-- task-specific skills
-- deterministic hooks
-- repository navigation docs
-- verification workflows
-- tool/MCP configuration changes
-- recovery workflows
+- [x] instruction restructuring
+- [ ] task-specific skills
+- [ ] deterministic hooks
+- [x] repository navigation docs
+- [x] verification workflows
+- [ ] tool/MCP configuration changes
+- [ ] recovery workflows
 
 No automatic application by default.
 
