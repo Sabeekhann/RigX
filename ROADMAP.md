@@ -39,12 +39,12 @@ RIGX is being built from deterministic foundations outward. Dates are intentiona
 Generate reviewable proposals for:
 
 - [x] instruction restructuring
-- [ ] task-specific skills
-- [ ] deterministic hooks
+- [x] task-specific skills
+- [x] deterministic hooks
 - [x] repository navigation docs
 - [x] verification workflows
 - [ ] tool/MCP configuration changes
-- [ ] recovery workflows
+- [x] recovery workflows
 
 No automatic application by default.
 

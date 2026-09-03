@@ -1,6 +1,8 @@
 import path from 'node:path';
 import { analyzeRepository, inventoryRepository } from '../core/scanner.js';
 import { generateProposals } from '../core/proposals.js';
+import { readSessionIndex } from '../core/session-index.js';
+import { analyzeRecurrence } from '../core/recurrence.js';
 
 function renderProposal(item, index) {
   return [
@@ -10,11 +12,21 @@ function renderProposal(item, index) {
   ].join('\n');
 }
 
+async function loadRecurrenceFindings(root) {
+  try {
+    const index = await readSessionIndex(root);
+    return analyzeRecurrence(index.sessions).findings;
+  } catch {
+    return [];
+  }
+}
+
 export async function runPropose(rootInput, json = false) {
   const root = path.resolve(rootInput);
   const inventory = await inventoryRepository(root);
   const findings = await analyzeRepository(inventory);
-  const result = await generateProposals(root, inventory, findings);
+  const recurrenceFindings = await loadRecurrenceFindings(root);
+  const result = await generateProposals(root, inventory, findings, recurrenceFindings);
 
   if (json) return `${JSON.stringify(result, null, 2)}\n`;
 
