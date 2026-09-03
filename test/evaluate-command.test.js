@@ -21,17 +21,26 @@ async function initRepo() {
   return root;
 }
 
-async function commitPackageJson(root, scripts, message) {
+// Uses a real .js file invoked as `node <file>`, rather than an inline
+// `node -e "..."` string, so the fixture doesn't depend on shell/npm quoting
+// behavior that differs between POSIX shells and Windows cmd.exe.
+async function commitVerify(root, scriptExitCodes, message) {
+  const scripts = {};
+  for (const [name, exitCode] of Object.entries(scriptExitCodes)) {
+    const filename = `verify-${name}.js`;
+    await writeFile(path.join(root, filename), `process.exitCode = ${exitCode};\n`, 'utf8');
+    scripts[name] = `node ${filename}`;
+  }
   await writeFile(path.join(root, 'package.json'), JSON.stringify({ scripts }), 'utf8');
-  await git(['add', 'package.json'], root);
+  await git(['add', '-A'], root);
   await git(['commit', '-m', message], root);
 }
 
 test('evaluate command renders a regression as text', async () => {
   const root = await initRepo();
-  await commitPackageJson(root, { test: 'node -e "process.exit(0)"' }, 'baseline');
+  await commitVerify(root, { test: 0 }, 'baseline');
   await git(['checkout', '-b', 'candidate'], root);
-  await commitPackageJson(root, { test: 'node -e "process.exit(1)"' }, 'break test');
+  await commitVerify(root, { test: 1 }, 'break test');
 
   const output = await runEvaluate(root, 'main', 'candidate', false);
   assert.match(output, /RIGX Evaluate/);
@@ -42,7 +51,7 @@ test('evaluate command renders a regression as text', async () => {
 
 test('evaluate command reports no regressions when both sides pass', async () => {
   const root = await initRepo();
-  await commitPackageJson(root, { test: 'node -e "process.exit(0)"' }, 'baseline');
+  await commitVerify(root, { test: 0 }, 'baseline');
   await git(['branch', 'candidate'], root);
 
   const output = await runEvaluate(root, 'main', 'candidate', false);
@@ -51,7 +60,7 @@ test('evaluate command reports no regressions when both sides pass', async () =>
 
 test('evaluate command returns valid JSON', async () => {
   const root = await initRepo();
-  await commitPackageJson(root, { test: 'node -e "process.exit(0)"' }, 'baseline');
+  await commitVerify(root, { test: 0 }, 'baseline');
   await git(['branch', 'candidate'], root);
 
   const output = JSON.parse(await runEvaluate(root, 'main', 'candidate', true));

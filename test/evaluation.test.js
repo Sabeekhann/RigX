@@ -27,9 +27,24 @@ async function commitPackageJson(root, scripts, message) {
   await git(['commit', '-m', message], root);
 }
 
+// Uses a real .js file invoked as `node <file>`, rather than an inline
+// `node -e "..."` string, so the fixture doesn't depend on shell/npm quoting
+// behavior that differs between POSIX shells and Windows cmd.exe.
+async function commitVerify(root, scriptExitCodes, message) {
+  const scripts = {};
+  for (const [name, exitCode] of Object.entries(scriptExitCodes)) {
+    const filename = `verify-${name}.js`;
+    await writeFile(path.join(root, filename), `process.exitCode = ${exitCode};\n`, 'utf8');
+    scripts[name] = `node ${filename}`;
+  }
+  await writeFile(path.join(root, 'package.json'), JSON.stringify({ scripts }), 'utf8');
+  await git(['add', '-A'], root);
+  await git(['commit', '-m', message], root);
+}
+
 test('compareRefs runs verification scripts in isolated worktrees and reports no regression when both pass', async () => {
   const root = await initRepo();
-  await commitPackageJson(root, { test: 'node -e "process.exit(0)"' }, 'baseline');
+  await commitVerify(root, { test: 0 }, 'baseline');
   await git(['branch', 'candidate'], root);
 
   const result = await compareRefs(root, 'main', 'candidate');
@@ -41,9 +56,9 @@ test('compareRefs runs verification scripts in isolated worktrees and reports no
 
 test('compareRefs detects a regression when candidate fails a script the baseline passed', async () => {
   const root = await initRepo();
-  await commitPackageJson(root, { test: 'node -e "process.exit(0)"' }, 'baseline');
+  await commitVerify(root, { test: 0 }, 'baseline');
   await git(['checkout', '-b', 'candidate'], root);
-  await commitPackageJson(root, { test: 'node -e "process.exit(1)"' }, 'break test');
+  await commitVerify(root, { test: 1 }, 'break test');
 
   const result = await compareRefs(root, 'main', 'candidate');
   assert.equal(result.baseline.scripts[0].outcome, 'success');
@@ -53,7 +68,7 @@ test('compareRefs detects a regression when candidate fails a script the baselin
 
 test('compareRefs does not flag a pre-existing failure as a regression', async () => {
   const root = await initRepo();
-  await commitPackageJson(root, { test: 'node -e "process.exit(1)"' }, 'baseline already failing');
+  await commitVerify(root, { test: 1 }, 'baseline already failing');
   await git(['branch', 'candidate'], root);
 
   const result = await compareRefs(root, 'main', 'candidate');
@@ -64,9 +79,9 @@ test('compareRefs does not flag a pre-existing failure as a regression', async (
 
 test('compareRefs works when the candidate ref is the currently checked-out branch', async () => {
   const root = await initRepo();
-  await commitPackageJson(root, { test: 'node -e "process.exit(0)"' }, 'baseline');
+  await commitVerify(root, { test: 0 }, 'baseline');
   await git(['checkout', '-b', 'feature'], root);
-  await commitPackageJson(root, { test: 'node -e "process.exit(0)"', lint: 'node -e "process.exit(0)"' }, 'feature work');
+  await commitVerify(root, { test: 0, lint: 0 }, 'feature work');
 
   const result = await compareRefs(root, 'main', 'feature');
   assert.equal(result.candidate.scripts[0].outcome, 'success');
@@ -85,9 +100,9 @@ test('compareRefs reports an empty script list when no test/lint/typecheck scrip
 
 test('compareRefs leaves the caller\'s working directory untouched', async () => {
   const root = await initRepo();
-  await commitPackageJson(root, { test: 'node -e "process.exit(0)"' }, 'baseline');
+  await commitVerify(root, { test: 0 }, 'baseline');
   await git(['checkout', '-b', 'candidate'], root);
-  await commitPackageJson(root, { test: 'node -e "process.exit(1)"' }, 'candidate change');
+  await commitVerify(root, { test: 1 }, 'candidate change');
 
   await compareRefs(root, 'main', 'candidate');
 
@@ -99,7 +114,7 @@ test('compareRefs leaves the caller\'s working directory untouched', async () =>
 
 test('createWorktree symlinks an existing node_modules into the worktree', async () => {
   const root = await initRepo();
-  await commitPackageJson(root, { test: 'node -e "process.exit(0)"' }, 'baseline');
+  await commitVerify(root, { test: 0 }, 'baseline');
   await mkdir(path.join(root, 'node_modules'), { recursive: true });
   await writeFile(path.join(root, 'node_modules', 'marker.txt'), 'present', 'utf8');
 
@@ -114,7 +129,7 @@ test('createWorktree symlinks an existing node_modules into the worktree', async
 
 test('removeWorktree is safe to call even after the worktree directory is already gone', async () => {
   const root = await initRepo();
-  await commitPackageJson(root, { test: 'node -e "process.exit(0)"' }, 'baseline');
+  await commitVerify(root, { test: 0 }, 'baseline');
 
   const { dir } = await createWorktree(root, 'main');
   await rm(dir, { recursive: true, force: true });
